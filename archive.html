@@ -157,7 +157,8 @@ permalink: /archive.html
             {% if post.subtitle %}<span class="post-sub">{{ post.subtitle }}</span>{% endif %}
             <span class="post-date">{{ post.date | date: "%Y.%m.%d" }}</span>
           </span>
-          {% if post.thumbnail %}<span class="post-thumb"><img src="{{ post.thumbnail }}" alt=""></span>{% endif %}
+          {% assign thumb = post.thumbnail | default: post.photos.first %}
+          {% if thumb %}<span class="post-thumb"><img src="{{ thumb }}" alt=""></span>{% endif %}
         </a>
       </li>
       {% endfor %}
