@@ -48,7 +48,8 @@
   .menu-btn span:nth-child(2) { top: 25px; }
   body.menu-open .menu-btn span:nth-child(1) { top: 21px; transform: rotate(45deg); }
   body.menu-open .menu-btn span:nth-child(2) { top: 21px; transform: rotate(-45deg); }
-  .menu-btn:focus-visible { outline: 1px solid currentColor; outline-offset: 2px; }
+  .menu-btn:focus { outline: none; }
+  button, a { -webkit-tap-highlight-color: transparent; }
 
   /* ── 카테고리 화면 ── */
   .menu {
@@ -83,6 +84,9 @@
   }
   /* 대표 이미지가 깔리면 문구는 흰색으로 자연스럽게 바뀌어 그대로 남음 */
   .home h1, .home p { transition: color 2.8s ease, text-shadow 2.8s ease, opacity 1.6s ease; }
+  /* 대표 이미지로 넘어갈 때 타이틀·이름은 서서히 사라짐 */
+  .stage { transition: opacity 1.6s ease; }
+  body.leave .stage { opacity: 0; }
   body.shown .home h1 { color: #fff; text-shadow: 0 1px 20px rgba(0,0,0,.16); }
   body.shown .home p { color: rgba(255,255,255,.88); text-shadow: 0 1px 14px rgba(0,0,0,.16); }
   .home h1 {
@@ -122,8 +126,8 @@
     transition: opacity .9s ease;
   }
   .feather-link.on { opacity: 1; pointer-events: auto; cursor: pointer; }
-  .feather-link span { padding: 0 2px 1px; border-bottom: 1px solid transparent; transition: border-color .3s; }
-  .feather-link:hover span, .feather-link:focus-visible span { border-bottom-color: currentColor; }
+  .feather-link { transition: opacity .9s ease, color .3s ease; }
+  .feather-link:hover, .feather-link:focus-visible { color: #1c1e20; }   /* 밑줄 없이 진해지기만 */
   .feather-link:focus-visible { outline: none; }
 
   /* 페이지 이동 시 부드럽게 덮이는 막 */
@@ -158,12 +162,13 @@
     bottom: calc(24px + env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
     font: inherit; font-size: .95rem; color: var(--sub);
-    background: none; border: 0; border-bottom: 1px solid transparent;
+    background: none; border: 0;
     cursor: pointer; padding: 4px 2px;
-    transition: color 1.6s ease;
+    transition: color .3s ease;
   }
   body.shown #replay { color: rgba(255,255,255,.9); text-shadow: 0 0 14px rgba(0,0,0,.28); }
-  #replay:hover, #replay:focus-visible { border-bottom-color: currentColor; outline: none; }
+  #replay:hover, #replay:focus-visible { color: var(--text); outline: none; }
+  body.shown #replay:hover, body.shown #replay:focus-visible { color: #fff; }
 
   /* 모바일: 문구를 화면 가운데보다 조금 아래로 */
   @media (max-width: 600px) {
@@ -215,7 +220,7 @@
   <div class="veil" aria-hidden="true"></div>
 
   <div class="art">
-    <div class="art-media"><img src="images/26_DE-Delete(2).jpg" alt="대표 작품"></div>
+    <div class="art-media"><img src="images/home.jpg" alt="대표 작품"></div>
   </div>
 
   <button id="replay" type="button">replay</button>
@@ -675,7 +680,7 @@
     return 0.6;
   }
   function contrastFor(L) { return Math.min(Math.max((0.95 - L) * 1.7, 0.02), 0.6); }
-  var emisNow = 0.02, emisArt = null;
+  var emisNow = 0.02, emisArt = null, leaveAt = 0;
 
   var vA = null, vB = null;
   function placeLink(F) {
@@ -695,14 +700,15 @@
   }
 
   function updateFeathers(t, now) {
-    var fade = 0;   // 깃털은 사라지지 않고 계속 남음
+    // 대표 이미지로 넘어갈 때 모든 깃털(메뉴 깃털 포함)도 함께 사라짐
+    var fade = leaveAt ? smooth(leaveAt, leaveAt + 1600, t) : 0;
 
     // 배경 대비 자동 조절 (배경이 바뀌면 같은 속도로 서서히 따라감)
     var shown = document.body.classList.contains("shown");
     if (shown && emisArt === null) emisArt = contrastFor(artLum());
     var target = shown ? emisArt : contrastFor(pageLum());
     emisNow += (target - emisNow) * 0.025;
-    F3.mats.forEach(function (m) { m.emissiveIntensity = emisNow; });
+    F3.mats.forEach(function (m) { m.emissiveIntensity = emisNow; m.opacity = 0.96 * (1 - fade); });
 
     F3.items.forEach(function (F) {
       var ft = t - F.delay;
@@ -785,7 +791,7 @@
     timers.forEach(clearTimeout); timers = [];
     cancelAnimationFrame(raf);
     document.body.classList.add("reset");
-    document.body.classList.remove("ready", "shown", "text-in");
+    document.body.classList.remove("ready", "leave", "shown", "text-in");
     void document.body.offsetWidth;
     document.body.classList.remove("reset");
     title.innerHTML = "";
@@ -807,11 +813,11 @@
     });
 
     if (reduce) {
-      document.body.classList.add("text-in", "ready", "shown");
+      document.body.classList.add("text-in", "ready", "leave", "shown");
       return;
     }
 
-    emisArt = null;
+    emisArt = null; leaveAt = 0;
     if (!F3) F3 = initFeathers();
     if (F3) spawnFeathers();
 
@@ -819,15 +825,18 @@
     function frame(now) {
       var t = now - t0;
       if (F3) updateFeathers(t, now);
-      raf = requestAnimationFrame(frame);   // 메뉴 깃털이 계속 반응하도록 유지
+      if (!leaveAt || t < leaveAt + 1900) raf = requestAnimationFrame(frame);
     }
     raf = requestAnimationFrame(frame);
 
     timers.push(setTimeout(function () { document.body.classList.add("text-in"); }, T_TEXT));
     timers.push(setTimeout(function () { document.body.classList.add("ready"); }, T_READY));
-    // 마지막 깃털이 내려앉은 뒤 3초 후 배경이 대표 이미지로 바뀜
+    // 마지막 깃털이 내려앉은 뒤 3초 후: 타이틀·깃털이 사라지며 배경이 대표 이미지로 바뀜
     var lastLand = F3 ? F3.lastLand : 7400;
-    timers.push(setTimeout(function () { document.body.classList.add("shown"); }, lastLand + BG_AFTER));
+    var bgAt = lastLand + BG_AFTER;
+    leaveAt = bgAt - 600;
+    timers.push(setTimeout(function () { document.body.classList.add("leave"); }, leaveAt));
+    timers.push(setTimeout(function () { document.body.classList.add("shown"); }, bgAt));
   }
 
   /* ── 메뉴 열기/닫기 ── */
