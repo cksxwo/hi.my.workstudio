@@ -83,17 +83,16 @@ img { display: block; max-width: 100%; height: auto; }
 .page-title {
   font-size: 1.6rem;
   font-weight: 400;
-  letter-spacing: 0.03em;
-  margin-bottom: 48px;
+  letter-spacing: 0.06em;
+  margin-bottom: 56px;
 }
 
-/* ---------- CV ---------- */
+/* ---------- CV (구분선 없음) ---------- */
 .cv-section {
   display: grid;
   grid-template-columns: 160px 1fr;
   gap: 24px;
-  padding: 28px 0;
-  border-top: 1px solid var(--line);
+  padding: 0 0 56px;
 }
 .cv-section h2 {
   font-size: 1.05rem;
@@ -102,8 +101,18 @@ img { display: block; max-width: 100%; height: auto; }
   letter-spacing: 0.02em;
 }
 .cv-section ul { list-style: none; }
-.cv-section li { margin-bottom: 10px; }
-.cv-section li span { color: var(--sub); margin-right: 16px; font-weight: 400; }
+.cv-section ul + ul { margin-top: 40px; }
+.cv-section li {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+.cv-section .yr {
+  flex: 0 0 3em;
+  color: var(--sub);
+  font-weight: 400;
+}
+.cv-section .tx { flex: 1; }
 
 /* ---------- Artwork ---------- */
 .artwork-grid { columns: 3 280px; column-gap: 24px; }
@@ -157,5 +166,5 @@ img { display: block; max-width: 100%; height: auto; }
 /* ---------- 모바일 ---------- */
 @media (max-width: 600px) {
   .site-nav { gap: 22px; }
-  .cv-section { grid-template-columns: 1fr; gap: 8px; }
+  .cv-section { grid-template-columns: 1fr; gap: 12px; }
 }
