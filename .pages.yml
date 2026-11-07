@@ -35,10 +35,10 @@ content:
         label: 본문
         type: rich-text
 
-  - name: exhibitions
+  - name: exhibition_posts
     label: Exhibition
     type: collection
-    path: _exhibitions
+    path: _exhibition_posts
     filename: "{year}-{primary}.md"
     view:
       primary: title
