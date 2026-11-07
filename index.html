@@ -168,6 +168,17 @@
   /* 모바일: 문구를 화면 가운데보다 조금 아래로 */
   @media (max-width: 600px) {
     .home { padding: 60px 5% 0; }
+
+    /* 모바일 크기에서만: 가로 이미지를 시계 반대 방향으로 90° 돌려 세로 화면을 채움 */
+    .art-media { position: relative; }
+    .art-media img {
+      position: absolute; left: 50%; top: 50%;
+      width: 100vh; height: 100vw;          /* 돌리기 전 기준: 가로=화면 높이, 세로=화면 폭 */
+      width: 100dvh;
+      max-width: none;
+      transform: translate(-50%, -50%) rotate(-90deg);
+      object-fit: cover;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
