@@ -1,17 +1,29 @@
+/* ---------- 폰트 ---------- */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
+
 :root {
-  --bg: #ffffff;
-  --text: #111111;
-  --sub: #888888;
-  --line: #e6e6e6;
+  --bg: #f7f5ef;
+  --text: #1c1c1c;
+  --sub: #8a8780;
+  --line: #dedbd2;
+
+  /* 영문은 명조, 한글은 Pretendard로 자동 분리 */
+  --font: "Cormorant Garamond", "Pretendard", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --weight: 200; /* 한글 굵기: 100 가장 얇음 · 200 · 300 */
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-family: var(--font);
+  font-weight: var(--weight);
+  font-size: 16px;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.7;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -24,16 +36,27 @@ img { display: block; max-width: 100%; height: auto; }
   z-index: 10;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 24px 5%;
+  align-items: baseline;
+  padding: 28px 5%;
   background: var(--bg);
 }
-.site-title { font-weight: 700; letter-spacing: -0.02em; }
-.site-nav { display: flex; gap: 28px; list-style: none; font-size: 0.95rem; }
+.site-title {
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+.site-nav {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
 .site-nav a {
   color: var(--sub);
   padding-bottom: 2px;
   border-bottom: 1px solid transparent;
+  transition: color 0.2s;
 }
 .site-nav a:hover,
 .site-nav a.active {
@@ -43,77 +66,102 @@ img { display: block; max-width: 100%; height: auto; }
 
 /* ---------- 메인 홈 ---------- */
 .home {
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 90px);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 0 5% 80px;
+  padding: 0 5% 100px;
 }
 .home h1 {
-  font-size: clamp(2rem, 6vw, 4rem);
-  letter-spacing: -0.03em;
+  font-size: clamp(2.4rem, 7vw, 4.8rem);
+  font-weight: 400;
+  letter-spacing: 0.01em;
   line-height: 1.2;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
-.home p { color: var(--sub); }
+.home p { color: var(--sub); font-size: 1rem; }
 
 /* ---------- 공통 페이지 영역 ---------- */
-.page { max-width: 1100px; margin: 0 auto; padding: 40px 5% 100px; }
-.page-title { font-size: 1.4rem; letter-spacing: -0.02em; margin-bottom: 40px; }
+.page { max-width: 1100px; margin: 0 auto; padding: 48px 5% 120px; }
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  margin-bottom: 48px;
+}
 
 /* ---------- CV ---------- */
 .cv-section {
   display: grid;
-  grid-template-columns: 140px 1fr;
+  grid-template-columns: 160px 1fr;
   gap: 24px;
-  padding: 24px 0;
+  padding: 28px 0;
   border-top: 1px solid var(--line);
 }
-.cv-section h2 { font-size: 0.95rem; color: var(--sub); font-weight: 500; }
+.cv-section h2 {
+  font-size: 1.05rem;
+  color: var(--sub);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
 .cv-section ul { list-style: none; }
-.cv-section li { margin-bottom: 8px; }
-.cv-section li span { color: var(--sub); margin-right: 12px; }
+.cv-section li { margin-bottom: 10px; }
+.cv-section li span { color: var(--sub); margin-right: 16px; font-weight: 400; }
 
 /* ---------- Artwork ---------- */
-.artwork-grid { columns: 3 280px; column-gap: 20px; }
-.artwork-grid figure { break-inside: avoid; margin-bottom: 20px; }
-.artwork-grid figcaption { margin-top: 8px; font-size: 0.85rem; color: var(--sub); }
+.artwork-grid { columns: 3 280px; column-gap: 24px; }
+.artwork-grid figure { break-inside: avoid; margin-bottom: 28px; }
+.artwork-grid figcaption {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--sub);
+}
 
 /* ---------- Exhibition 목록 ---------- */
 .poster-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 40px 32px;
+  gap: 48px 32px;
 }
 .poster img {
   width: 100%;
   aspect-ratio: 2 / 3;
   object-fit: cover;
-  background: #eeeeee;
-  transition: opacity 0.2s;
+  background: #ebe8df;
+  transition: opacity 0.25s;
 }
-.poster:hover img { opacity: 0.85; }
-.poster h3 { margin-top: 12px; font-size: 1rem; font-weight: 600; }
-.poster span { font-size: 0.85rem; color: var(--sub); }
+.poster:hover img { opacity: 0.8; }
+.poster h3 { margin-top: 14px; font-size: 1.05rem; font-weight: 400; }
+.poster span { font-size: 0.9rem; color: var(--sub); }
 
 /* ---------- Exhibition 상세 ---------- */
-.back-link { display: inline-block; margin-bottom: 32px; font-size: 0.9rem; color: var(--sub); }
+.back-link {
+  display: inline-block;
+  margin-bottom: 36px;
+  font-size: 1rem;
+  color: var(--sub);
+}
 .back-link:hover { color: var(--text); }
-.ex-title { font-size: 1.8rem; letter-spacing: -0.02em; margin-bottom: 8px; }
-.ex-meta { color: var(--sub); font-size: 0.9rem; margin-bottom: 48px; }
-.ex-text { max-width: 680px; margin-bottom: 72px; }
-.ex-text p { margin-bottom: 1.2em; }
-.ex-gallery { display: grid; gap: 20px; }
+.ex-title {
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  margin-bottom: 8px;
+}
+.ex-meta { color: var(--sub); font-size: 0.95rem; margin-bottom: 56px; }
+.ex-text { max-width: 680px; margin-bottom: 80px; }
+.ex-text p { margin-bottom: 1.4em; }
+.ex-gallery { display: grid; gap: 24px; }
 .ex-gallery img { width: 100%; }
 
 /* ---------- 하단 ---------- */
-.site-footer { padding: 32px 5%; font-size: 0.85rem; color: var(--sub); }
+.site-footer { padding: 36px 5%; font-size: 0.9rem; color: var(--sub); }
 
 /* ---------- 모바일 ---------- */
 @media (max-width: 600px) {
   .site-header { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .site-nav { gap: 20px; }
+  .site-nav { gap: 22px; }
   .cv-section { grid-template-columns: 1fr; gap: 8px; }
 }
