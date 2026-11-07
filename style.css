@@ -11,6 +11,8 @@
   /* 영문은 명조, 한글은 Pretendard로 자동 분리 */
   --font: "Cormorant Garamond", "Pretendard", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --weight: 200; /* 한글 굵기: 100 가장 얇음 · 200 · 300 */
+
+  --cv-size: 13px; /* CV 문구 크기: 더 작게 12px · 더 크게 14px */
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -87,28 +89,30 @@ img { display: block; max-width: 100%; height: auto; }
   margin-bottom: 56px;
 }
 
-/* ---------- CV (구분선 없음) ---------- */
+/* ---------- CV (구분선 없음, 작은 글씨) ---------- */
 .cv-section {
   display: grid;
   grid-template-columns: 160px 1fr;
   gap: 24px;
-  padding: 0 0 56px;
+  padding: 0 0 36px;
+  font-size: var(--cv-size);
+  line-height: 1.5;
 }
 .cv-section h2 {
-  font-size: 1.05rem;
+  font-size: 1em;
   color: var(--sub);
   font-weight: 400;
   letter-spacing: 0.02em;
 }
 .cv-section ul { list-style: none; }
-.cv-section ul + ul { margin-top: 40px; }
+.cv-section ul + ul { margin-top: 1.6em; }
 .cv-section li {
   display: flex;
-  gap: 20px;
-  margin-bottom: 10px;
+  gap: 14px;
+  margin-bottom: 2px;
 }
 .cv-section .yr {
-  flex: 0 0 3em;
+  flex: 0 0 3.2em;
   color: var(--sub);
   font-weight: 400;
 }
@@ -166,5 +170,5 @@ img { display: block; max-width: 100%; height: auto; }
 /* ---------- 모바일 ---------- */
 @media (max-width: 600px) {
   .site-nav { gap: 22px; }
-  .cv-section { grid-template-columns: 1fr; gap: 12px; }
+  .cv-section { grid-template-columns: 1fr; gap: 8px; }
 }
