@@ -2,55 +2,239 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Archive | hi my workstudio</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── 기본 설정 (style.css가 없어도 메인홈과 같은 모습이 되도록) ── */
+    :root {
+      --bg: #f3f5f6; --text: #1c1e20; --sub: #84898c; --placeholder: #e6e9eb;
+      --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font); font-weight: 300;
+      background: var(--bg); color: var(--text);
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    .page { max-width: 1100px; margin: 0 auto; padding-left: 5%; padding-right: 5%; padding-bottom: 120px; }
+    /* 하단 문구: CV처럼 화면 맨 아래 가운데 */
+    body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+    .page { flex: 1 0 auto; width: 100%; }
+    .site-footer { padding: 36px 5%; font-size: .85rem; color: var(--sub); text-align: center; }
+
+    /* ── 페이지가 부드럽게 나타남 ── */
+    body { animation: pageIn .7s ease both; }
+    @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    /* ── 두 줄 메뉴 버튼 (메인홈과 동일) ── */
+    .menu-btn {
+      position: fixed; z-index: 30;
+      top: calc(24px + env(safe-area-inset-top, 0px)); left: 50%;
+      width: 44px; height: 44px; transform: translateX(-50%);
+      background: none; border: 0; cursor: pointer; color: var(--text);
+    }
+    .menu-btn:focus { outline: none; }
+    /* 아래로 스크롤하면 메뉴 버튼이 사라지고, 위로 올리면 다시 나타남 */
+    .menu-btn { transition: opacity .4s ease, transform .4s ease; }
+    body.nav-hidden .menu-btn { opacity: 0; pointer-events: none; transform: translate(-50%, -14px); }
+    .menu-btn span {
+      position: absolute; left: 10px; width: 24px; height: 2px;
+      background: currentColor;
+      transition: transform .5s cubic-bezier(.65,0,.35,1), top .5s cubic-bezier(.65,0,.35,1);
+    }
+    .menu-btn span:nth-child(1) { top: 17px; }
+    .menu-btn span:nth-child(2) { top: 25px; }
+    body.menu-open .menu-btn span:nth-child(1) { top: 21px; transform: rotate(45deg); }
+    body.menu-open .menu-btn span:nth-child(2) { top: 21px; transform: rotate(-45deg); }
+
+    /* ── 카테고리 화면 (메인홈과 동일) ── */
+    .menu {
+      position: fixed; inset: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      opacity: 0; visibility: hidden;
+      transition: opacity .6s ease, visibility 0s linear .6s;
+    }
+    body.menu-open .menu { opacity: 1; visibility: visible; transition: opacity .6s ease; }
+    body.menu-open { overflow: hidden; }
+    .menu ul { list-style: none; text-align: center; margin-top: -6vh; }
+    .menu li {
+      opacity: 0; transform: translateY(14px);
+      transition: opacity .5s ease, transform .6s cubic-bezier(.22,.61,.36,1);
+    }
+    body.menu-open .menu li { opacity: 1; transform: none; }
+    body.menu-open .menu li:nth-child(1) { transition-delay: .12s; }
+    body.menu-open .menu li:nth-child(2) { transition-delay: .2s; }
+    body.menu-open .menu li:nth-child(3) { transition-delay: .28s; }
+    body.menu-open .menu li:nth-child(4) { transition-delay: .36s; }
+    .menu a {
+      display: inline-block; padding: 9px 0;
+      font-size: 1.3rem; font-weight: 300; letter-spacing: .08em;
+      color: var(--sub); transition: color .3s;
+    }
+    .menu a:hover, .menu a:focus-visible, .menu a.active { color: var(--text); outline: none; }
+
+    /* 페이지 이동 시 부드럽게 덮이는 막 */
+    .veil {
+      position: fixed; inset: 0; z-index: 40;
+      background: var(--bg); opacity: 0; pointer-events: none;
+      transition: opacity .7s ease;
+    }
+    body.navigating .veil { opacity: 1; pointer-events: auto; }
+
+    /* ── 아카이브 목록 (블로그 목록처럼) ── */
+    .page { padding-top: calc(96px + env(safe-area-inset-top, 0px)); }
+    .page-title {
+      text-align: center; margin-bottom: 48px;
+      font-size: 1.6rem; font-weight: 300; letter-spacing: .06em; line-height: 1.4;
+    }
+    .post-list { list-style: none; max-width: 680px; margin: 0 auto; border-top: 1px solid #e2e6e9; }
+    .post-list li { border-bottom: 1px solid #e2e6e9; }
+    /* 왼쪽: 제목·소제목·날짜 / 오른쪽: 썸네일(사진이 있는 글만) */
+    .post-link { display: flex; align-items: center; gap: 24px; padding: 24px 4px; }
+    .post-text { flex: 1; min-width: 0; }
+    .post-date { display: block; font-size: .78rem; color: var(--sub); letter-spacing: .06em; margin-top: 10px; }
+    .post-thumb {
+      flex: 0 0 auto; width: 96px; aspect-ratio: 1 / 1; overflow: hidden;
+      background: var(--placeholder);
+    }
+    .post-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+    .post-link:hover .post-thumb img { transform: scale(1.04); }
+    .post-title {
+      display: block; font-size: 1.15rem; font-weight: 400; line-height: 1.5; color: var(--text);
+      transition: transform .35s ease;
+    }
+    .post-sub { display: block; margin-top: 4px; font-size: .9rem; color: var(--sub); line-height: 1.6; }
+    .post-link:hover .post-title, .post-link:focus-visible .post-title { transform: translateX(4px); }
+    .post-link:focus-visible { outline: none; }
+
+    @media (max-width: 600px) {
+      .menu a { font-size: 1.1rem; }
+      .page { padding-top: calc(84px + env(safe-area-inset-top, 0px)); }
+      .page-title { font-size: 1.3rem; margin-bottom: 32px; }
+      .post-link { padding: 20px 2px; gap: 16px; }
+      .post-thumb { width: 68px; }
+      .post-title { font-size: 1.05rem; }
+      .post-sub { font-size: .85rem; }
+    }
+  </style>
 </head>
 <body>
 
-  <header class="site-header">
-    <ul class="site-nav">
+  <button class="menu-btn" id="menuBtn" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="menu">
+    <span></span><span></span>
+  </button>
+
+  <nav class="menu" id="menu" aria-label="카테고리" aria-hidden="true">
+    <ul>
       <li><a href="cv.html">CV</a></li>
       <li><a href="artwork.html">Artwork</a></li>
-      <li><a href="exhibition.html">Exhibition</a></li>
       <li><a href="archive.html" class="active">Archive</a></li>
+      <li><a href="exhibition.html">Exhibition</a></li>
     </ul>
-  </header>
+  </nav>
 
   <main class="page">
     <h1 class="page-title">Archive</h1>
 
-    <div class="archive-list">
-      <article class="archive-item">
-        <span class="date">2026.00</span>
-        <div>
-          <h3>항목 제목 1</h3>
-          <p>여기에 짧은 설명을 적어 주세요.</p>
-          <img src="https://placehold.co/800x500?text=Archive+1" alt="항목 1">
-        </div>
-      </article>
-
-      <article class="archive-item">
-        <span class="date">2025.00</span>
-        <div>
-          <h3>항목 제목 2</h3>
-          <p>여기에 짧은 설명을 적어 주세요.</p>
-        </div>
-      </article>
-
-      <article class="archive-item">
-        <span class="date">2024.00</span>
-        <div>
-          <h3>항목 제목 3</h3>
-          <p>여기에 짧은 설명을 적어 주세요.</p>
-          <img src="https://placehold.co/800x500?text=Archive+3" alt="항목 3">
-        </div>
-      </article>
-    </div>
+    <!-- 글을 추가하려면 <li> … </li> 묶음을 복사해서 제목·소제목·날짜·링크·썸네일만 바꾸세요
+         소제목이 없으면 post-sub 줄을, 사진이 없는 글이면 post-thumb 줄을 지우면 돼요
+         링크(href)는 글 페이지 파일 이름 (archive-01.html을 복사해 archive-02.html … 로 만들어 쓰세요) -->
+    <ul class="post-list">
+      <li>
+        <a class="post-link soft" href="archive-01.html">
+          <span class="post-text">
+            <span class="post-title">글 제목 1</span>
+            <span class="post-sub">소제목이 있다면 여기에 보여요</span>
+            <span class="post-date">2026.00</span>
+          </span>
+          <span class="post-thumb"><img src="https://placehold.co/300x300?text=1" alt=""></span>
+        </a>
+      </li>
+      <li>
+        <a class="post-link soft" href="archive-01.html">
+          <span class="post-text">
+            <span class="post-title">글 제목 2</span>
+            <span class="post-date">2025.00</span>
+          </span>
+        </a>
+      </li>
+      <li>
+        <a class="post-link soft" href="archive-01.html">
+          <span class="post-text">
+            <span class="post-title">글 제목 3</span>
+            <span class="post-sub">짧은 소제목</span>
+            <span class="post-date">2024.00</span>
+          </span>
+          <span class="post-thumb"><img src="https://placehold.co/300x300?text=3" alt=""></span>
+        </a>
+      </li>
+    </ul>
   </main>
 
-  <footer class="site-footer">© 2026 hi my workstudio</footer>
+  <footer class="site-footer">© hi my workstudio</footer>
 
+  <div class="veil" aria-hidden="true"></div>
+
+<script>
+  /* ── 메뉴 열기/닫기 (메인홈과 동일) ── */
+  var menuBtn = document.getElementById("menuBtn");
+  var menu = document.getElementById("menu");
+  function setMenu(open) {
+    document.body.classList.toggle("menu-open", open);
+    menuBtn.setAttribute("aria-expanded", open);
+    menuBtn.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    menu.setAttribute("aria-hidden", !open);
+  }
+  menuBtn.addEventListener("click", function () { setMenu(!document.body.classList.contains("menu-open")); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") setMenu(false); });
+
+  /* 부드럽게 페이지 이동 */
+  var leaving = false;
+  function goTo(href) {
+    if (leaving) return;
+    leaving = true;
+    document.body.classList.add("navigating");
+    setTimeout(function () { location.href = href; }, 700);
+  }
+  Array.prototype.forEach.call(menu.querySelectorAll("a"), function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (a.classList.contains("active")) { setMenu(false); return; }   // 지금 페이지면 닫기만
+      goTo(a.href);
+    });
+  });
+  /* 스크롤 방향에 따라 메뉴 버튼 숨기기/보이기 */
+  (function () {
+    var lastY = window.scrollY, ticking = false;
+    function onScroll() {
+      var y = window.scrollY;
+      if (document.body.classList.contains("menu-open")) { lastY = y; ticking = false; return; }
+      if (y < 40) document.body.classList.remove("nav-hidden");            // 맨 위 근처에선 항상 보임
+      else if (y > lastY + 4) document.body.classList.add("nav-hidden");    // 아래로 → 숨김
+      else if (y < lastY - 4) document.body.classList.remove("nav-hidden"); // 위로 → 보임
+      lastY = y; ticking = false;
+    }
+    window.addEventListener("scroll", function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+    }, { passive: true });
+  })();
+
+  window.addEventListener("pageshow", function (e) {
+    if (e.persisted) { leaving = false; document.body.classList.remove("navigating"); }
+  });
+
+
+  /* 목록·돌아가기 링크도 부드럽게 이동 */
+  Array.prototype.forEach.call(document.querySelectorAll("a.soft"), function (a) {
+    a.addEventListener("click", function (e) { e.preventDefault(); goTo(a.href); });
+  });
+</script>
 </body>
 </html>
