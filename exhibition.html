@@ -390,9 +390,9 @@ permalink: /exhibition.html
 
 
   /* ════════ 전시 지도 ════════
-     전시 목록은 Pages CMS에서 등록한 전시(_exhibitions 폴더)로 자동으로 만들어져요. */
+     전시 목록은 Pages CMS에서 등록한 전시(_exhibition_posts 폴더)로 자동으로 만들어져요. */
   var EXHIBITIONS = [
-    {% for ex in site.exhibitions %}{% assign txt = ex.content | strip_html | strip %}{% assign nviews = ex.views.size | default: 0 %}{% assign nphotos = ex.photos.size | default: 0 %}
+    {% for ex in site.exhibition_posts %}{% assign txt = ex.content | strip_html | strip %}{% assign nviews = ex.views.size | default: 0 %}{% assign nphotos = ex.photos.size | default: 0 %}
     { title: {{ ex.title | jsonify }}, address: {{ ex.address | jsonify }}, place: {{ ex.place | jsonify }},
       lat: {{ ex.lat | default: "null" }}, lng: {{ ex.lng | default: "null" }},
       poster: {{ ex.poster | default: ex.photos.first | jsonify }},
