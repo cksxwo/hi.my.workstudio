@@ -1,3 +1,6 @@
+---
+# Jekyll이 이 파일을 자동 목록으로 만들도록 하는 표시 (지우지 마세요)
+---
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -143,38 +146,20 @@
   <main class="page">
     <h1 class="page-title">Archive</h1>
 
-    <!-- 글을 추가하려면 <li> … </li> 묶음을 복사해서 제목·소제목·날짜·링크·썸네일만 바꾸세요
-         소제목이 없으면 post-sub 줄을, 사진이 없는 글이면 post-thumb 줄을 지우면 돼요
-         링크(href)는 글 페이지 파일 이름 (archive-01.html을 복사해 archive-02.html … 로 만들어 쓰세요) -->
+    <!-- 글 목록은 _posts 폴더의 글로 자동으로 만들어져요 (최신 글이 위로) -->
     <ul class="post-list">
+      {% for post in site.posts %}
       <li>
-        <a class="post-link soft" href="archive-01.html">
+        <a class="post-link soft" href="{{ post.url | relative_url }}">
           <span class="post-text">
-            <span class="post-title">글 제목 1</span>
-            <span class="post-sub">소제목이 있다면 여기에 보여요</span>
-            <span class="post-date">2026.00</span>
+            <span class="post-title">{{ post.title }}</span>
+            {% if post.subtitle %}<span class="post-sub">{{ post.subtitle }}</span>{% endif %}
+            <span class="post-date">{{ post.date | date: "%Y.%m.%d" }}</span>
           </span>
-          <span class="post-thumb"><img src="https://placehold.co/300x300?text=1" alt=""></span>
+          {% if post.thumbnail %}<span class="post-thumb"><img src="{{ post.thumbnail }}" alt=""></span>{% endif %}
         </a>
       </li>
-      <li>
-        <a class="post-link soft" href="archive-01.html">
-          <span class="post-text">
-            <span class="post-title">글 제목 2</span>
-            <span class="post-date">2025.00</span>
-          </span>
-        </a>
-      </li>
-      <li>
-        <a class="post-link soft" href="archive-01.html">
-          <span class="post-text">
-            <span class="post-title">글 제목 3</span>
-            <span class="post-sub">짧은 소제목</span>
-            <span class="post-date">2024.00</span>
-          </span>
-          <span class="post-thumb"><img src="https://placehold.co/300x300?text=3" alt=""></span>
-        </a>
-      </li>
+      {% endfor %}
     </ul>
   </main>
 
