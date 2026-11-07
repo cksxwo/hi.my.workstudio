@@ -90,20 +90,21 @@
 
     /* ── 전시 상세 ── */
     .page { padding-top: calc(96px + env(safe-area-inset-top, 0px)); }
-    .ex { max-width: 920px; margin: 0 auto; }
+    .ex { max-width: 680px; margin: 0 auto; }                    /* Archive 글 페이지와 같은 폭·여백 */
     /* 위: 포스터 + 전시 정보 */
-    .ex-head { display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: 48px; align-items: end; }
+    .ex-head { display: grid; grid-template-columns: minmax(0, 240px) 1fr; gap: 36px; align-items: end; }
+    .ex-head.no-poster { grid-template-columns: 1fr; }        /* 포스터가 없으면 제목이 좁은 칸에 갇혀 줄바꿈되지 않게 */
     .ex-poster { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; background: var(--placeholder); }
     .ex h1 { font-size: 1.6rem; font-weight: 400; line-height: 1.45; }
     .ex-info { margin-top: 14px; font-size: .9rem; color: var(--sub); line-height: 1.8; }
-    .ex-section { max-width: 680px; margin: 72px auto 0; }
+    .ex-section { margin: 72px 0 0; }
     .ex-label { font-size: .78rem; letter-spacing: .1em; color: var(--sub); margin-bottom: 18px; }
     /* 전시 서문 */
     .ex-text { font-size: .95rem; line-height: 1.95; }
     .ex-text p { margin-bottom: 1.4em; }
     .ex-text img { width: 100%; height: auto; margin: 1.2em 0; }
     /* 전시 전경 */
-    .ex-views { max-width: 920px; margin: 72px auto 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ex-views { margin: 72px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .ex-views img { width: 100%; height: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--placeholder); cursor: zoom-in; }
     .ex-views img:first-child { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
     /* 전경 사진 크게 보기 */
@@ -145,8 +146,8 @@
 
   <main class="page">
     <article class="ex">
-      <div class="ex-head">
-        {% assign poster = page.poster | default: page.photos.first %}
+      {% assign poster = page.poster | default: page.photos.first %}
+      <div class="ex-head{% unless poster %} no-poster{% endunless %}">
         {% if poster %}<img class="ex-poster" src="{{ poster }}" alt="{{ page.title }} 포스터">{% endif %}
         <div>
           <h1>{{ page.title }}</h1>
