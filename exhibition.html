@@ -1,3 +1,7 @@
+---
+# Jekyll이 전시 목록을 자동으로 채우도록 하는 표시 (지우지 마세요)
+permalink: /exhibition.html
+---
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -144,6 +148,9 @@
       box-shadow: 0 12px 30px rgba(40,48,54,.12);
     }
     .pop-img:focus { outline: none; }
+    /* 내용이 없는 전시: 포스터만 보여주고 화살표·이동 없음 */
+    .pop.no-link .pop-go { display: none; }
+    .pop.no-link .pop-img { cursor: default; }
     .pop-img img { display: block; width: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
     /* 이미지에 마우스를 올리거나 누르면 화살표가 나타남 */
     .pop-go {
@@ -383,22 +390,112 @@
 
 
   /* ════════ 전시 지도 ════════
-     전시를 추가하려면 아래 목록에 한 줄을 복사해서 바꾸세요.
-     map: "seoul" 또는 "france" / lng(경도)·lat(위도): 지도 앱에서 장소를 찍으면 나오는 좌표 */
+     전시 목록은 Pages CMS에서 등록한 전시(_exhibitions 폴더)로 자동으로 만들어져요. */
   var EXHIBITIONS = [
-    { map: "seoul", title: "전시 제목 1", year: "2026", venue: "청파갤러리", lng: 126.9647, lat: 37.5463,
-      poster: "https://placehold.co/400x600?text=Poster+1", href: "exhibition-01.html" },
-    { map: "seoul", title: "전시 제목 2", year: "2025", venue: "장소 이름", lng: 126.9810, lat: 37.5830,
-      poster: "https://placehold.co/400x600?text=Poster+2", href: "exhibition-01.html" },
-    { map: "seoul", title: "전시 제목 3", year: "2025", venue: "장소 이름", lng: 127.0560, lat: 37.5445,
-      poster: "https://placehold.co/400x600?text=Poster+3", href: "exhibition-01.html" },
-    { map: "seoul", title: "전시 제목 4", year: "2024", venue: "장소 이름", lng: 126.9236, lat: 37.5620,
-      poster: "https://placehold.co/400x600?text=Poster+4", href: "exhibition-01.html" },
-    { map: "seoul", title: "전시 제목 5", year: "2023", venue: "장소 이름", lng: 127.0396, lat: 37.5172,
-      poster: "https://placehold.co/400x600?text=Poster+5", href: "exhibition-01.html" },
-    { map: "france", title: "AFFINITES IV", year: "2025", venue: "Galerie de l'École des Beaux-Arts, Versailles", lng: 2.1301, lat: 48.8049,
-      poster: "https://placehold.co/400x600?text=Versailles", href: "exhibition-01.html" }
+    {% for ex in site.exhibitions %}{% assign txt = ex.content | strip_html | strip %}{% assign nviews = ex.views.size | default: 0 %}{% assign nphotos = ex.photos.size | default: 0 %}
+    { title: {{ ex.title | jsonify }}, address: {{ ex.address | jsonify }}, place: {{ ex.place | jsonify }},
+      lat: {{ ex.lat | default: "null" }}, lng: {{ ex.lng | default: "null" }},
+      poster: {{ ex.poster | default: ex.photos.first | jsonify }},
+      /* 서문이나 전경 사진(두 번째 사진부터)이 있으면 상세 페이지로 연결, 없으면 포스터만 */
+      href: {% if txt != "" or nviews > 0 or nphotos > 1 %}{{ ex.url | relative_url | jsonify }}{% else %}null{% endif %} },{% endfor %}
   ];
+
+  /* ── 주소 → 지도 위치 ──
+     주소 속 '○○구'(서울)나 도시 이름·우편번호(프랑스)를 읽어 그 근처에 점을 찍어요.
+     같은 구·도시 안에서도 주소마다 조금씩 다른 자리에 찍혀 겹치지 않아요. */
+  var SEOUL_GU = {
+    "종로구": [126.979, 37.594],
+    "중구": [126.996, 37.56],
+    "용산구": [126.979, 37.535],
+    "성동구": [127.041, 37.551],
+    "광진구": [127.086, 37.546],
+    "동대문구": [127.055, 37.582],
+    "중랑구": [127.093, 37.598],
+    "성북구": [127.017, 37.606],
+    "강북구": [127.011, 37.643],
+    "도봉구": [127.032, 37.669],
+    "노원구": [127.075, 37.652],
+    "은평구": [126.927, 37.618],
+    "서대문구": [126.938, 37.578],
+    "마포구": [126.902, 37.556],
+    "양천구": [126.856, 37.525],
+    "강서구": [126.822, 37.561],
+    "구로구": [126.856, 37.494],
+    "금천구": [126.902, 37.46],
+    "영등포구": [126.91, 37.52],
+    "동작구": [126.951, 37.499],
+    "관악구": [126.945, 37.467],
+    "서초구": [127.032, 37.473],
+    "강남구": [127.063, 37.496],
+    "송파구": [127.115, 37.505],
+    "강동구": [127.147, 37.55]
+  };
+  var FRANCE_CITY = [
+    [/파리|paris/i, 2.3522, 48.8566],
+    [/베르사유|versailles/i, 2.1301, 48.8049],
+    [/리옹|lyon/i, 4.8357, 45.764],
+    [/마르세유|marseille/i, 5.3698, 43.2965],
+    [/니스|nice/i, 7.262, 43.7102],
+    [/보르도|bordeaux/i, -0.5792, 44.8378],
+    [/스트라스부르|strasbourg/i, 7.7521, 48.5734],
+    [/릴|lille/i, 3.0573, 50.6292],
+    [/낭트|nantes/i, -1.5536, 47.2184],
+    [/툴루즈|toulouse/i, 1.4442, 43.6047],
+    [/몽펠리에|montpellier/i, 3.8767, 43.6108],
+    [/렌|rennes/i, -1.6778, 48.1173],
+    [/아를|arles/i, 4.6278, 43.6768],
+    [/아비뇽|avignon/i, 4.8055, 43.9493],
+    [/칸|cannes/i, 7.0174, 43.5528],
+    [/디종|dijon/i, 5.0415, 47.322],
+    [/루앙|rouen/i, 1.0993, 49.4432],
+    [/랭스|reims/i, 4.0317, 49.2583],
+    [/메스|metz/i, 6.1757, 49.1193],
+    [/그르노블|grenoble/i, 5.7245, 45.1885],
+    [/투르|tours/i, 0.6848, 47.3941],
+    [/낭시|nancy/i, 6.1844, 48.6921],
+    [/엑상프로방스|aix-en-provence/i, 5.4474, 43.5297],
+    [/안시|annecy/i, 6.1294, 45.8992],
+    [/르아브르|le havre/i, 0.1077, 49.4944],
+    [/생테티엔|saint-étienne|saint-etienne/i, 4.3872, 45.4397]
+  ];
+  var FRANCE_DEPT = { "75": [2.3522, 48.8566], "77": [2.95, 48.62], "78": [1.95, 48.8], "91": [2.25, 48.52], "92": [2.24, 48.85], "93": [2.48, 48.91], "94": [2.47, 48.78], "95": [2.14, 49.08] };   // 파리 주변(일드프랑스) 우편번호 앞 두 자리
+  // 예전 방식(목록에서 고른 장소)도 그대로 읽음
+  function legacyPlace(p) {
+    if (!p) return null;
+    var m = p.match(/^서울 (.+)$/); if (m && SEOUL_GU[m[1]]) return ["seoul"].concat(SEOUL_GU[m[1]]);
+    m = p.match(/^프랑스 (.+)$/);
+    if (m) for (var i = 0; i < FRANCE_CITY.length; i++) if (FRANCE_CITY[i][0].test(m[1])) return ["france", FRANCE_CITY[i][1], FRANCE_CITY[i][2]];
+    return null;
+  }
+  function fromAddress(addr) {
+    if (!addr) return null;
+    var a = String(addr);
+    for (var gu in SEOUL_GU) if (a.indexOf(gu) !== -1) return ["seoul"].concat(SEOUL_GU[gu]);
+    for (var i = 0; i < FRANCE_CITY.length; i++) if (FRANCE_CITY[i][0].test(a)) return ["france", FRANCE_CITY[i][1], FRANCE_CITY[i][2]];
+    var zip = a.match(/\b(\d{2})\d{3}\b/);
+    if (zip && FRANCE_DEPT[zip[1]]) return ["france"].concat(FRANCE_DEPT[zip[1]]);
+    if (/서울|seoul/i.test(a)) return ["seoul", 126.978, 37.566];
+    if (/프랑스|france/i.test(a)) return ["france", 2.3522, 48.8566];
+    return null;
+  }
+  // 주소 글자로 정해지는 작은 흔들림: 같은 구·도시라도 주소가 다르면 자리가 조금 달라짐
+  function jitter(str, map) {
+    var h = 0; str = String(str || "");
+    for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    var ang = (h % 360) * Math.PI / 180, r = ((h >>> 9) % 100) / 100;
+    var k = map === "seoul" ? 0.009 : 0.25;
+    return [Math.cos(ang) * r * k, Math.sin(ang) * r * k * 0.8];
+  }
+
+  EXHIBITIONS = EXHIBITIONS.filter(function (ex) {
+    var p = legacyPlace(ex.place) || fromAddress(ex.address);
+    if (!p) return false;                         // 위치를 알 수 없는 전시는 지도에 표시하지 않음
+    ex.map = p[0];
+    if (ex.lng && ex.lat) return true;            // 좌표를 직접 넣은 경우 그대로
+    var j = ex.address ? jitter(ex.address, ex.map) : [0, 0];
+    ex.lng = p[1] + j[0]; ex.lat = p[2] + j[1];
+    return true;
+  });
 
   /* 위도·경도 → 각 지도 위의 위치 */
   var MAPS = {
@@ -485,6 +582,7 @@
     document.getElementById("popImg").alt = ex.title + " 포스터";
     document.getElementById("popGo").setAttribute("aria-label", ex.title + " 전시 페이지로 이동");
     pop.classList.remove("arrow");
+    pop.classList.toggle("no-link", !ex.href);
     pop.classList.add("on");
     pop.setAttribute("aria-hidden", "false");
     place(ex);
@@ -497,11 +595,11 @@
   }
   document.getElementById("popGo").addEventListener("click", function (e) {
     e.stopPropagation();
-    if (current) goTo(current.href);
+    if (current && current.href) goTo(current.href);
   });
   // 이미지를 누르면 화살표가 나타나고, 화살표를 누르면 이동
   pop.addEventListener("click", function (e) { e.stopPropagation(); });
-  document.getElementById("popImg").addEventListener("click", function () { pop.classList.add("arrow"); });
+  document.getElementById("popImg").addEventListener("click", function () { if (current && current.href) pop.classList.add("arrow"); });
   document.addEventListener("click", hide);
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") hide(); });
 </script>
