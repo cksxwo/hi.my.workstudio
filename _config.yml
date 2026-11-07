@@ -1,0 +1,14 @@
+# hi my workstudio — Jekyll 설정
+title: hi my workstudio
+baseurl: "/hi.my.workstudio"     # 사이트 주소가 cksxwo.github.io/hi.my.workstudio 이므로
+permalink: /archive/:title/       # 글 주소: .../archive/글이름/
+
+# _posts 폴더의 글은 모두 글 페이지 모양(_layouts/post.html)으로 만들어짐
+defaults:
+  - scope:
+      path: "_posts"
+    values:
+      layout: post
+
+exclude:
+  - README.md
