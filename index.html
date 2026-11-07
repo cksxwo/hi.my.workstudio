@@ -39,7 +39,7 @@
     color: var(--text);
     opacity: 0; transition: opacity 1.6s ease, color .6s ease;
   }
-  body.ready .menu-btn { opacity: 1; }
+  body.controls .menu-btn { opacity: 1; }   /* 깃털이 모두 착지한 뒤 등장 */
   body.shown .menu-btn { color: #fff; filter: drop-shadow(0 0 8px rgba(0,0,0,.25)); }
   body.menu-open .menu-btn { color: var(--text); filter: none; opacity: 1; }
   .menu-btn span {
@@ -74,7 +74,7 @@
   body.menu-open .menu li:nth-child(3) { transition-delay: .28s; }
   .menu a {
     display: inline-block; padding: 9px 0;
-    font-size: 1.1rem; font-weight: 300; letter-spacing: .08em;
+    font-size: 1.3rem; font-weight: 300; letter-spacing: .08em;   /* PC */
     color: var(--sub); transition: color .3s;
   }
   .menu a:hover, .menu a:focus-visible { color: var(--text); outline: none; }
@@ -111,7 +111,7 @@
   body.text-in .ch { opacity: 1; filter: blur(0); }
   .sp { display: inline-block; width: .28em; }
   .home p {
-    color: var(--sub); font-size: 1.15rem; opacity: 0;
+    color: var(--sub); font-size: 1.3rem; opacity: 0;   /* PC */
     margin-top: 26px;                      /* 타이틀과의 간격 */
     transform: translateY(calc(var(--tfs) * -0.6));   /* 타이틀을 올린 만큼 같이 올림 */
     /* 이름만 클래식한 세리프 (Times 계열, 없는 기기는 같은 모양의 Tinos로) */
@@ -182,14 +182,18 @@
     font: inherit; font-size: 1rem; color: var(--sub);   /* chaneun woo와 같은 크기 */
     background: none; border: 0;
     cursor: pointer; padding: 4px 2px;
-    transition: color .3s ease;
+    opacity: 0; pointer-events: none;
+    transition: color .3s ease, opacity 1.6s ease;
   }
+  body.controls #replay { opacity: 1; pointer-events: auto; }   /* 메뉴 버튼과 함께 등장 */
   body.shown #replay { color: rgba(255,255,255,.9); text-shadow: 0 0 14px rgba(0,0,0,.28); }
   #replay:hover, #replay:focus-visible { color: var(--text); outline: none; }
   body.shown #replay:hover, body.shown #replay:focus-visible { color: #fff; }
 
   /* 모바일 */
   @media (max-width: 600px) {
+    .home p { font-size: 1.05rem; margin-top: 16px; }   /* 모바일 이름 크기·타이틀과 간격 */
+    .menu a { font-size: 1.1rem; }                       /* 모바일 메뉴 글씨는 그대로 */
     /* 모바일 크기에서만: 가로 이미지를 시계 반대 방향으로 90° 돌려 세로 화면을 채움 */
     .art-media { position: relative; }
     .art-media img {
@@ -245,12 +249,12 @@
 <script>
   var TEXT = "hi my workstudio";
 
-  /* ── 타이밍 (ms) ── 시작부터 대표 이미지까지 10초 */
+  /* ── 타이밍 (ms) ── 시작부터 대표 사진까지 15초 */
   var T_TEXT = 1000;    // 문구가 서서히 나타나기 시작
   var T_READY = 6200;
   var LABEL_START = 400;   // 마지막 깃털 착지 후 첫 글씨가 나타나기까지
   var LABEL_GAP = 900;     // 글씨 사이 간격
-  var BG_AFTER = 5000;   // 깃털이 모두 내려앉고 나서 배경이 바뀌기까지
+  var BG_AT = 15000;     // 시작 후 대표 사진으로 바뀌는 시점 (15초)
 
   /* ── 깃털 설정 ── */
   var EXTRA_FEATHERS = 36;   // 메뉴가 아닌 일반 깃털 수
@@ -820,7 +824,7 @@
     timers.forEach(clearTimeout); timers = [];
     cancelAnimationFrame(raf);
     document.body.classList.add("reset");
-    document.body.classList.remove("ready", "leave", "shown", "text-in");
+    document.body.classList.remove("ready", "leave", "shown", "text-in", "controls");
     void document.body.offsetWidth;
     document.body.classList.remove("reset");
     title.innerHTML = "";
@@ -842,7 +846,7 @@
     });
 
     if (reduce) {
-      document.body.classList.add("text-in", "ready", "leave", "shown");
+      document.body.classList.add("text-in", "ready", "leave", "shown", "controls");
       return;
     }
 
@@ -860,9 +864,11 @@
 
     timers.push(setTimeout(function () { document.body.classList.add("text-in"); }, T_TEXT));
     timers.push(setTimeout(function () { document.body.classList.add("ready"); }, T_READY));
-    // 마지막 깃털이 내려앉은 뒤 5초 후: 타이틀·깃털이 사라지며 배경이 대표 이미지로 바뀜
-    var lastLand = F3 ? F3.lastLand : 7400;
-    var bgAt = lastLand + BG_AFTER;
+    // 깃털이 모두 내려앉은 뒤 메뉴 버튼과 replay가 함께 나타남
+    var landed = F3 ? F3.lastLand : 7400;
+    timers.push(setTimeout(function () { document.body.classList.add("controls"); }, landed + 300));
+    // 시작 후 15초: 타이틀·깃털이 사라지며 배경이 대표 사진으로 바뀜
+    var bgAt = BG_AT;
     leaveAt = bgAt - 600;
     timers.push(setTimeout(function () { document.body.classList.add("leave"); }, leaveAt));
     timers.push(setTimeout(function () { document.body.classList.add("shown"); }, bgAt));
