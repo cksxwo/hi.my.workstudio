@@ -6,6 +6,9 @@
 <title>hi my workstudio</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tinos&amp;display=swap">
 <style>
   :root {
     --bg: #f3f5f6;
@@ -78,9 +81,15 @@
 
   .home {
     position: absolute; inset: 0; z-index: 2;
-    display: flex; justify-content: center; align-items: center;
-    text-align: center; padding: 0 5% 90px;
+    text-align: center;
     pointer-events: none;
+    --tfs: clamp(1.6rem, 4.2vw, 2.8rem);   /* 타이틀 글자 크기 */
+  }
+  /* 타이틀이 두 줄 메뉴 버튼과 replay의 정확히 가운데에 오도록
+     메뉴 버튼 중심 = 위에서 46px, replay 중심 = 아래에서 약 57px */
+  .stage {
+    position: absolute; left: 5%; right: 5%;
+    top: calc((46px + env(safe-area-inset-top, 0px) + 100% - 57px - env(safe-area-inset-bottom, 0px)) / 2);
   }
   /* 대표 이미지가 깔리면 문구는 흰색으로 자연스럽게 바뀌어 그대로 남음 */
   .home h1, .home p { transition: color 2.8s ease, text-shadow 2.8s ease, opacity 1.6s ease; }
@@ -90,9 +99,9 @@
   body.shown .home h1 { color: #fff; text-shadow: 0 1px 20px rgba(0,0,0,.16); }
   body.shown .home p { color: rgba(255,255,255,.88); text-shadow: 0 1px 14px rgba(0,0,0,.16); }
   .home h1 {
-    font-size: clamp(1.6rem, 4.2vw, 2.8rem);
+    font-size: var(--tfs);
     font-weight: 300; line-height: 1.2; letter-spacing: -0.01em;
-    margin-bottom: 14px;
+    transform: translateY(-50%);           /* 타이틀 가운데가 기준선에 오게 */
   }
   /* 문구: 떨어지지 않고 은은하게 서서히 나타남 */
   .ch {
@@ -101,7 +110,14 @@
   }
   body.text-in .ch { opacity: 1; filter: blur(0); }
   .sp { display: inline-block; width: .28em; }
-  .home p { color: var(--sub); font-size: 1rem; opacity: 0; }
+  .home p {
+    color: var(--sub); font-size: 1.15rem; opacity: 0;
+    margin-top: 26px;                      /* 타이틀과의 간격 */
+    transform: translateY(calc(var(--tfs) * -0.6));   /* 타이틀을 올린 만큼 같이 올림 */
+    /* 이름만 클래식한 세리프 (Times 계열, 없는 기기는 같은 모양의 Tinos로) */
+    font-family: "Times New Roman", Times, "Tinos", serif;
+    font-weight: 400; letter-spacing: .03em;
+  }
   body.ready .home p { opacity: 1; }
 
   /* 3D 깃털 캔버스 */
@@ -119,14 +135,16 @@
   .feather-link {
     position: absolute; left: 0; top: 0; height: 44px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 9.5px; font-weight: 400; letter-spacing: .08em;
+    font-size: 13px; font-weight: 300; letter-spacing: .08em;
     color: #5b6064;                 /* 연한 차콜 */
     mix-blend-mode: multiply;       /* 깃털 결 위에 스며든 듯하게 */
     opacity: 0; pointer-events: none;
     transition: opacity .9s ease;
   }
   .feather-link.on { opacity: 1; pointer-events: auto; cursor: pointer; }
-  .feather-link { transition: opacity .9s ease, color .3s ease; }
+  .feather-link { transition: opacity 1.6s ease, color .3s ease; }   /* 은은하게 나타남 */
+  .feather-link span { white-space: nowrap; }
+  .feather-link span { display: inline-block; transform: scaleY(1.1); }   /* 글자를 세로로 아주 조금 길게 */
   .feather-link:hover, .feather-link:focus-visible { color: #1c1e20; }   /* 밑줄 없이 진해지기만 */
   .feather-link:focus-visible { outline: none; }
 
@@ -159,9 +177,9 @@
 
   #replay {
     position: fixed; left: 50%; z-index: 5;
-    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(44px + env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
-    font: inherit; font-size: .95rem; color: var(--sub);
+    font: inherit; font-size: 1rem; color: var(--sub);   /* chaneun woo와 같은 크기 */
     background: none; border: 0;
     cursor: pointer; padding: 4px 2px;
     transition: color .3s ease;
@@ -170,10 +188,8 @@
   #replay:hover, #replay:focus-visible { color: var(--text); outline: none; }
   body.shown #replay:hover, body.shown #replay:focus-visible { color: #fff; }
 
-  /* 모바일: 문구를 화면 가운데보다 조금 아래로 */
+  /* 모바일 */
   @media (max-width: 600px) {
-    .home { padding: 60px 5% 0; }
-
     /* 모바일 크기에서만: 가로 이미지를 시계 반대 방향으로 90° 돌려 세로 화면을 채움 */
     .art-media { position: relative; }
     .art-media img {
@@ -210,7 +226,7 @@
   <main class="home">
     <div class="stage">
       <h1 id="title" aria-label="hi my workstudio"></h1>
-      <p>chaneun woo</p>
+      <p>WOO CHANEUN</p>
     </div>
   </main>
 
@@ -232,7 +248,9 @@
   /* ── 타이밍 (ms) ── 시작부터 대표 이미지까지 10초 */
   var T_TEXT = 1000;    // 문구가 서서히 나타나기 시작
   var T_READY = 6200;
-  var BG_AFTER = 3000;   // 깃털이 모두 내려앉고 나서 배경이 바뀌기까지
+  var LABEL_START = 400;   // 마지막 깃털 착지 후 첫 글씨가 나타나기까지
+  var LABEL_GAP = 900;     // 글씨 사이 간격
+  var BG_AFTER = 5000;   // 깃털이 모두 내려앉고 나서 배경이 바뀌기까지
 
   /* ── 깃털 설정 ── */
   var EXTRA_FEATHERS = 36;   // 메뉴가 아닌 일반 깃털 수
@@ -301,7 +319,7 @@
 
     // 끝으로 갈수록 사라지는 깃가지 한 가닥
     // 흰 깃가지 사이사이 옅은 회색 결이 섞여야 흰 배경에서도 깃털로 읽힘
-    var TONES = ["255,255,255", "255,255,255", "246,247,248", "233,236,238", "222,226,229"];
+    var TONES = ["255,255,255", "255,255,255", "255,255,255", "251,252,253", "244,246,248"];
     function barb(x0, y0, cx, cy, x1, y1, a, lw) {
       var col = TONES[Math.floor(Math.random() * TONES.length)];
       var gr = g.createLinearGradient(x0, y0, x1, y1);
@@ -338,7 +356,7 @@
             var ang = T.downy ? rand(0.05, 1.5) : rand(0.15, 0.95);
             var ex = ox + s * L * Math.cos(ang), ey = oy - L * Math.sin(ang) * 0.8 + rand(-12, 20) * S;
             var gr = g.createLinearGradient(ox, oy, ex, ey);
-            var al = rand(0.18, 0.4);
+            var al = rand(0.3, 0.55);
             gr.addColorStop(0, "rgba(255,255,255," + al + ")");
             gr.addColorStop(0.6, "rgba(255,255,255," + (al * 0.6) + ")");
             gr.addColorStop(1, "rgba(255,255,255,0)");
@@ -361,7 +379,7 @@
         var cx = ox + s * reach * 0.45;
         var cy = oy - reach * Math.tan(a) * (T.wisp ? rand(0.1, 0.4) : 0.25);
         barb(ox, oy, cx, cy, ex2, ey2,
-             T.wisp ? rand(0.35, 0.62) : rand(0.55, 0.82),
+             T.wisp ? rand(0.55, 0.8) : rand(0.75, 0.95),
              (T.wisp ? rand(0.6, 1) : rand(0.85, 1.3)) * S);
 
         // 깃가지 끝의 잔털: 아주 옅게 여러 가닥 번짐
@@ -389,7 +407,7 @@
     m.globalAlpha = 0.55;
     m.drawImage(o, 0, 0);
     m.filter = "blur(" + (0.6 * S).toFixed(1) + "px)";
-    m.globalAlpha = 0.9;
+    m.globalAlpha = 1;
     m.drawImage(o, 0, 0);
     m.filter = "none";
 
@@ -401,7 +419,7 @@
     for (var i = 0; i < steps; i++) {
       var t1 = (i / steps) * T.shaftTop, t2 = ((i + 1) / steps) * T.shaftTop;
       var fadeTop = 1 - Math.pow(t1 / T.shaftTop, 3) * 0.7;
-      m.strokeStyle = (t1 < QUILL ? "rgba(214,208,198," : "rgba(226,222,214,") + (0.8 * fadeTop).toFixed(3) + ")";
+      m.strokeStyle = (t1 < QUILL ? "rgba(236,233,226," : "rgba(246,244,239,") + (0.85 * fadeTop).toFixed(3) + ")";
       m.lineWidth = (T.shaftW * (1 - t1) + 0.7) * S;
       m.beginPath();
       m.moveTo(sx(t1), sy(t1));
@@ -430,8 +448,8 @@
     camera.position.set(0, 0, 20);
 
     // 부드러운 자연광 + 위쪽 주광: 깃털이 뒤집힐 때 결이 살아남
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xaab3ba, 0.8));
-    var sun = new THREE.DirectionalLight(0xffffff, 1.05);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xe1e6e9, 0.95));
+    var sun = new THREE.DirectionalLight(0xffffff, 0.95);
     sun.position.set(-4, 9, 5);
     scene.add(sun);
 
@@ -446,9 +464,9 @@
       texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
       T.mat = new THREE.MeshStandardMaterial({
         map: texture, color: 0xffffff,
-        emissive: 0xffffff, emissiveIntensity: 0.02,
+        emissive: 0xffffff, emissiveIntensity: 0.22,
         roughness: 0.92, metalness: 0,
-        transparent: true, alphaTest: 0.003, opacity: 0.96,
+        transparent: true, alphaTest: 0.003, opacity: 1,
         side: THREE.DoubleSide, depthWrite: false
       });
       T.navMat = T.mat.clone();
@@ -485,7 +503,7 @@
   function spawnFeathers() {
     F3.items.forEach(function (it) { F3.scene.remove(it.mesh); it.mesh.geometry.dispose(); });
     F3.items = [];
-    F3.mats.forEach(function (m) { m.opacity = 0.96; });
+    F3.mats.forEach(function (m) { m.opacity = 1; });
     F3.links.forEach(function (l) { l.classList.remove("on"); l.tabIndex = -1; });
 
     var cam = F3.camera;
@@ -501,8 +519,11 @@
        타이틀 글자 밑선 = 바닥. 깃털은 모두 이 선에 닿아 내려앉고, 그 위로 쌓임.
        문구 뒤쪽에 놓인 깃털은 글자에 가려지고, 앞쪽에 놓인 깃털은 글자 아랫부분을 가림. */
     var r = title.getBoundingClientRect();
-    var groundPx = r.top + r.height * 0.86;   // 글자 아래 끝선
-    var MAX_PILE = Math.min(h * 0.12, r.height * 2.4);     // 더미가 쌓일 수 있는 최대 높이
+    var groundPx = r.top + r.height * 0.88;   // 글자 아래 끝선
+    var capPx = r.top + r.height * 0.18;      // 글자 윗선
+    // 더미 최대 높이: 앞쪽은 글자 아랫부분만 가릴 만큼 낮게, 뒤쪽도 낮게
+    var xH = r.height * 0.55;                                 // 대략적인 글자 몸통 높이
+    var MAX_FRONT = xH * 0.4, MAX_BACK = xH * 0.9;
     var M = Math.max(24, w * 0.06);
 
     var N = 80, stackBack = [], stackFront = [], i;
@@ -550,7 +571,7 @@
     }
 
     // 메뉴 깃털: 자리·앞뒤·내려앉는 시간 모두 매번 무작위.
-    // 바닥선에 놓이므로 글씨가 타이틀 글자와 겹치지 않게 타이틀 양옆 바닥에서만 고름
+    // 글씨가 타이틀과 겹치지 않도록: 타이틀 양옆이면 바닥에, 타이틀 가로 범위 안이면 글자 위에 얹힘
     var navTypes = shuffle(["standard", "contour", "flight"]);
     var navLens = { standard: [1.2, 1.4], contour: [1.05, 1.25], flight: [1.4, 1.55] };
     var minDx = (w - 2 * M) * 0.18;
@@ -561,14 +582,17 @@
         return { type: nt, len: rand(navLens[nt][0], navLens[nt][1]), x: rand(M, w - M), front: Math.random() < 0.6 };
       });
       var ok = true;
-      for (var p1 = 0; p1 < 3 && ok; p1++) {
-        if (cand[p1].x > r.left - 40 && cand[p1].x < r.right + 40) ok = false;
+      for (var p1 = 0; p1 < 3 && ok; p1++)
         for (var p2 = p1 + 1; p2 < 3 && ok; p2++)
           if (Math.abs(cand[p1].x - cand[p2].x) < minDx) ok = false;
-      }
       picked = cand;
       if (ok) break;
     }
+    // 글씨 폭(대략)까지 고려해 타이틀과 가로로 겹치면 글자 위로 올림
+    picked.forEach(function (o) {
+      var lw = NAV[picked.indexOf(o)].label.length * 9.6 + 24;
+      if (o.x + lw / 2 > r.left - 10 && o.x - lw / 2 < r.right + 10) { o.onTop = true; o.front = true; }
+    });
     picked.forEach(function (o, k) {
       o.nav = k; o.D = rand(3800, 4600);
       o.delay = rand(4700, 7400) - o.D;
@@ -584,15 +608,18 @@
       var stack = o.front ? stackFront : stackBack;
       var b0 = bin(P.px - P.halfX * 0.85), b1 = bin(P.px + P.halfX * 0.85), base = 0, j;
       for (j = b0; j <= b1; j++) base = Math.max(base, stack[j]);
-      base = Math.min(base, MAX_PILE * rand(0.7, 1));
+      base = Math.min(base, (o.front ? MAX_FRONT : MAX_BACK) * rand(0.6, 1));
       // 깃털 아래쪽이 바닥선(또는 아래 깃털 위)에 닿고, 조금씩 파묻히며 놓임
       // 바닥에 놓인 깃털은 아래쪽이 바닥선에 확실히 닿게(살짝 눌린 듯), 위 깃털은 아래 깃털 사이로 파묻힘
-      var sink = base > 0 ? rand(0.2, 0.55) * P.halfY * 2 : rand(0.1, 0.35) * P.halfY;
+      var sink = base > 0 ? rand(0.3, 0.7) * P.halfY * 2 : rand(0.3, 0.6) * P.halfY;
       var depthOff = o.front ? rand(0, 3) : -rand(0, 2);
       var py = groundPx + depthOff - base - P.halfY + sink;
+      // 앞쪽 깃털은 윗부분이 글자 아랫부분까지만 올라오게
+      if (o.front && !o.onTop) py = Math.max(py, groundPx - MAX_FRONT - xH * 0.15 + P.halfY);
+      if (o.onTop) py = Math.min(py, capPx - P.halfY - 6);        // 글자 윗선 위에 얹혀 글씨가 타이틀 위로 보이게
       for (j = b0; j <= b1; j++) {
         var shape = 1 - Math.abs((j - (b0 + b1) / 2) / ((b1 - b0) / 2 + 1)) * 0.7;   // 가운데가 봉긋하게
-        stack[j] = Math.max(stack[j], base + P.halfY * 2 * rand(0.18, 0.42) * shape);
+        stack[j] = Math.max(stack[j], base + P.halfY * 2 * rand(0.1, 0.28) * shape);
       }
 
       var land = toWorld(P.px, py, P.z);
@@ -679,8 +706,8 @@
     }
     return 0.6;
   }
-  function contrastFor(L) { return Math.min(Math.max((0.95 - L) * 1.7, 0.02), 0.6); }
-  var emisNow = 0.02, emisArt = null, leaveAt = 0;
+  function contrastFor(L) { return Math.min(Math.max((0.95 - L) * 1.7, 0.22), 0.65); }
+  var emisNow = 0.22, emisArt = null, leaveAt = 0;
 
   var vA = null, vB = null;
   function placeLink(F) {
@@ -708,7 +735,7 @@
     if (shown && emisArt === null) emisArt = contrastFor(artLum());
     var target = shown ? emisArt : contrastFor(pageLum());
     emisNow += (target - emisNow) * 0.025;
-    F3.mats.forEach(function (m) { m.emissiveIntensity = emisNow; m.opacity = 0.96 * (1 - fade); });
+    F3.mats.forEach(function (m) { m.emissiveIntensity = emisNow; m.opacity = 1 - fade; });
 
     F3.items.forEach(function (F) {
       var ft = t - F.delay;
@@ -746,10 +773,7 @@
         }
         pos.needsUpdate = true;
         F.mesh.geometry.computeVertexNormals();
-        if (p >= 1) {
-          F.settled = true;
-          if (F.link && fade === 0) { F.link.classList.add("on"); F.link.tabIndex = 0; }
-        }
+        if (p >= 1) F.settled = true;
       }
 
       // 마우스 올림 / 누른 뒤 날아오름
@@ -759,6 +783,11 @@
 
       if (F.link && fade > 0 && F.link.classList.contains("on") && !F.flyAt) {
         F.link.classList.remove("on"); F.link.tabIndex = -1;   // 글씨도 함께 사라짐
+      }
+      // 깃털이 모두 내려앉은 뒤, 메뉴 글씨가 CV → Artwork → Exhibition 순서로 하나씩 나타남
+      if (F.link && F.settled && fade === 0 && !F.link.classList.contains("on") &&
+          t >= F3.lastLand + LABEL_START + F.nav * LABEL_GAP) {
+        F.link.classList.add("on"); F.link.tabIndex = 0;
       }
       if (F.link && F.settled) placeLink(F);
     });
@@ -831,7 +860,7 @@
 
     timers.push(setTimeout(function () { document.body.classList.add("text-in"); }, T_TEXT));
     timers.push(setTimeout(function () { document.body.classList.add("ready"); }, T_READY));
-    // 마지막 깃털이 내려앉은 뒤 3초 후: 타이틀·깃털이 사라지며 배경이 대표 이미지로 바뀜
+    // 마지막 깃털이 내려앉은 뒤 5초 후: 타이틀·깃털이 사라지며 배경이 대표 이미지로 바뀜
     var lastLand = F3 ? F3.lastLand : 7400;
     var bgAt = lastLand + BG_AFTER;
     leaveAt = bgAt - 600;
