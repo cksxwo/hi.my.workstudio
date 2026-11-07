@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{{ page.title }} | hi my workstudio</title>
+  <link rel="icon" href="{{ '/favicon.svg' | relative_url }}" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="{{ '/style.css' | relative_url }}">
+  <style>
+    /* ── 기본 설정 (style.css가 없어도 메인홈과 같은 모습이 되도록) ── */
+    :root {
+      --bg: #f3f5f6; --text: #1c1e20; --sub: #84898c; --placeholder: #e6e9eb;
+      --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font); font-weight: 300;
+      background: var(--bg); color: var(--text);
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    .page { max-width: 1100px; margin: 0 auto; padding-left: 5%; padding-right: 5%; padding-bottom: 120px; }
+    /* 하단 문구: CV처럼 화면 맨 아래 가운데 */
+    body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+    .page { flex: 1 0 auto; width: 100%; }
+    .site-footer { padding: 36px 5%; font-size: .85rem; color: var(--sub); text-align: center; }
+
+    /* ── 페이지가 부드럽게 나타남 ── */
+    body { animation: pageIn .7s ease both; }
+    @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    /* ── 두 줄 메뉴 버튼 (메인홈과 동일) ── */
+    .menu-btn {
+      position: fixed; z-index: 30;
+      top: calc(24px + env(safe-area-inset-top, 0px)); left: 50%;
+      width: 44px; height: 44px; transform: translateX(-50%);
+      background: none; border: 0; cursor: pointer; color: var(--text);
+    }
+    .menu-btn:focus { outline: none; }
+    /* 아래로 스크롤하면 메뉴 버튼이 사라지고, 위로 올리면 다시 나타남 */
+    .menu-btn { transition: opacity .4s ease, transform .4s ease; }
+    body.nav-hidden .menu-btn { opacity: 0; pointer-events: none; transform: translate(-50%, -14px); }
+    .menu-btn span {
+      position: absolute; left: 10px; width: 24px; height: 2px;
+      background: currentColor;
+      transition: transform .5s cubic-bezier(.65,0,.35,1), top .5s cubic-bezier(.65,0,.35,1);
+    }
+    .menu-btn span:nth-child(1) { top: 17px; }
+    .menu-btn span:nth-child(2) { top: 25px; }
+    body.menu-open .menu-btn span:nth-child(1) { top: 21px; transform: rotate(45deg); }
+    body.menu-open .menu-btn span:nth-child(2) { top: 21px; transform: rotate(-45deg); }
+
+    /* ── 카테고리 화면 (메인홈과 동일) ── */
+    .menu {
+      position: fixed; inset: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      opacity: 0; visibility: hidden;
+      transition: opacity .6s ease, visibility 0s linear .6s;
+    }
+    body.menu-open .menu { opacity: 1; visibility: visible; transition: opacity .6s ease; }
+    body.menu-open { overflow: hidden; }
+    .menu ul { list-style: none; text-align: center; margin-top: -6vh; }
+    .menu li {
+      opacity: 0; transform: translateY(14px);
+      transition: opacity .5s ease, transform .6s cubic-bezier(.22,.61,.36,1);
+    }
+    body.menu-open .menu li { opacity: 1; transform: none; }
+    body.menu-open .menu li:nth-child(1) { transition-delay: .12s; }
+    body.menu-open .menu li:nth-child(2) { transition-delay: .2s; }
+    body.menu-open .menu li:nth-child(3) { transition-delay: .28s; }
+    body.menu-open .menu li:nth-child(4) { transition-delay: .36s; }
+    .menu a {
+      display: inline-block; padding: 9px 0;
+      font-size: 1.3rem; font-weight: 300; letter-spacing: .08em;
+      color: var(--sub); transition: color .3s;
+    }
+    .menu a:hover, .menu a:focus-visible, .menu a.active { color: var(--text); outline: none; }
+
+    /* 페이지 이동 시 부드럽게 덮이는 막 */
+    .veil {
+      position: fixed; inset: 0; z-index: 40;
+      background: var(--bg); opacity: 0; pointer-events: none;
+      transition: opacity .7s ease;
+    }
+    body.navigating .veil { opacity: 1; pointer-events: auto; }
+
+    /* ── 전시 상세 ── */
+    .page { padding-top: calc(96px + env(safe-area-inset-top, 0px)); }
+    .ex { max-width: 920px; margin: 0 auto; }
+    /* 위: 포스터 + 전시 정보 */
+    .ex-head { display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: 48px; align-items: end; }
+    .ex-poster { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; background: var(--placeholder); }
+    .ex h1 { font-size: 1.6rem; font-weight: 400; line-height: 1.45; }
+    .ex-info { margin-top: 14px; font-size: .9rem; color: var(--sub); line-height: 1.8; }
+    .ex-section { max-width: 680px; margin: 72px auto 0; }
+    .ex-label { font-size: .78rem; letter-spacing: .1em; color: var(--sub); margin-bottom: 18px; }
+    /* 전시 서문 */
+    .ex-text { font-size: .95rem; line-height: 1.95; }
+    .ex-text p { margin-bottom: 1.4em; }
+    .ex-text img { width: 100%; height: auto; margin: 1.2em 0; }
+    /* 전시 전경 */
+    .ex-views { max-width: 920px; margin: 72px auto 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ex-views img { width: 100%; height: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--placeholder); cursor: zoom-in; }
+    .ex-views img:first-child { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+    /* 전경 사진 크게 보기 */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+      background: rgba(243,245,246,.96); opacity: 0; visibility: hidden; transition: opacity .4s ease, visibility 0s linear .4s;
+      cursor: zoom-out; padding: 5vh 5vw;
+    }
+    .lightbox.on { opacity: 1; visibility: visible; transition: opacity .4s ease; }
+    .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    @media (max-width: 600px) {
+      .menu a { font-size: 1.1rem; }
+      .page { padding-top: calc(84px + env(safe-area-inset-top, 0px)); }
+      .ex-head { grid-template-columns: 1fr; gap: 24px; }
+      .ex-poster { max-width: 260px; margin: 0 auto; }
+      .ex h1 { font-size: 1.3rem; }
+      .ex-section, .ex-views { margin-top: 48px; }
+      .ex-text { font-size: .92rem; }
+      .ex-views { grid-template-columns: 1fr; }
+      .ex-views img:first-child { aspect-ratio: 4 / 3; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="menu-btn" id="menuBtn" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="menu">
+    <span></span><span></span>
+  </button>
+
+  <nav class="menu" id="menu" aria-label="카테고리" aria-hidden="true">
+    <ul>
+      <li><a href="{{ '/cv.html' | relative_url }}">CV</a></li>
+      <li><a href="{{ '/artwork.html' | relative_url }}">Artwork</a></li>
+      <li><a href="{{ '/archive.html' | relative_url }}">Archive</a></li>
+      <li><a href="{{ '/exhibition.html' | relative_url }}">Exhibition</a></li>
+    </ul>
+  </nav>
+
+  <main class="page">
+    <article class="ex">
+      <div class="ex-head">
+        {% assign poster = page.poster | default: page.photos.first %}
+        {% if poster %}<img class="ex-poster" src="{{ poster }}" alt="{{ page.title }} 포스터">{% endif %}
+        <div>
+          <h1>{{ page.title }}</h1>
+          <p class="ex-info">
+            {% if page.period %}{{ page.period }}<br>{% endif %}
+            {% if page.venue %}{{ page.venue }}{% endif %}
+          </p>
+        </div>
+      </div>
+
+      {% if content != "" %}
+      <section class="ex-section">
+        <h2 class="ex-label">전시 서문</h2>
+        <div class="ex-text">{{ content }}</div>
+      </section>
+      {% endif %}
+
+      {% comment %} 전시 전경: 두 번째 사진부터 (예전 방식의 views 칸이 있으면 그것을 사용) {% endcomment %}
+      {% if page.views and page.views.size > 0 %}{% assign views = page.views %}{% assign skip = 0 %}
+      {% else %}{% assign views = page.photos %}{% assign skip = 1 %}{% endif %}
+      {% if views and views.size > skip %}
+      <section class="ex-views" aria-label="전시 전경">
+        {% for v in views offset: skip %}<img src="{{ v }}" alt="{{ page.title }} 전시 전경 {{ forloop.index }}" loading="lazy">{% endfor %}
+      </section>
+      {% endif %}
+    </article>
+  </main>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+
+  <footer class="site-footer">© hi my workstudio</footer>
+
+  <div class="veil" aria-hidden="true"></div>
+
+<script>
+  /* ── 메뉴 열기/닫기 (메인홈과 동일) ── */
+  var menuBtn = document.getElementById("menuBtn");
+  var menu = document.getElementById("menu");
+  function setMenu(open) {
+    document.body.classList.toggle("menu-open", open);
+    menuBtn.setAttribute("aria-expanded", open);
+    menuBtn.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    menu.setAttribute("aria-hidden", !open);
+  }
+  menuBtn.addEventListener("click", function () { setMenu(!document.body.classList.contains("menu-open")); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") setMenu(false); });
+
+  /* 부드럽게 페이지 이동 */
+  var leaving = false;
+  function goTo(href) {
+    if (leaving) return;
+    leaving = true;
+    document.body.classList.add("navigating");
+    setTimeout(function () { location.href = href; }, 700);
+  }
+  Array.prototype.forEach.call(menu.querySelectorAll("a"), function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (a.classList.contains("active")) { setMenu(false); return; }   // 지금 페이지면 닫기만
+      goTo(a.href);
+    });
+  });
+  /* 스크롤 방향에 따라 메뉴 버튼 숨기기/보이기 */
+  (function () {
+    var lastY = window.scrollY, ticking = false;
+    function onScroll() {
+      var y = window.scrollY;
+      if (document.body.classList.contains("menu-open")) { lastY = y; ticking = false; return; }
+      if (y < 40) document.body.classList.remove("nav-hidden");            // 맨 위 근처에선 항상 보임
+      else if (y > lastY + 4) document.body.classList.add("nav-hidden");    // 아래로 → 숨김
+      else if (y < lastY - 4) document.body.classList.remove("nav-hidden"); // 위로 → 보임
+      lastY = y; ticking = false;
+    }
+    window.addEventListener("scroll", function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+    }, { passive: true });
+  })();
+
+  window.addEventListener("pageshow", function (e) {
+    if (e.persisted) { leaving = false; document.body.classList.remove("navigating"); }
+  });
+
+
+  /* 전경 사진을 누르면 크게 보기 */
+  (function () {
+    var lb = document.getElementById("lightbox"), big = lb.querySelector("img");
+    Array.prototype.forEach.call(document.querySelectorAll(".ex-views img"), function (im) {
+      im.addEventListener("click", function () { big.src = im.src; lb.classList.add("on"); lb.setAttribute("aria-hidden", "false"); });
+    });
+    function close() { lb.classList.remove("on"); lb.setAttribute("aria-hidden", "true"); }
+    lb.addEventListener("click", close);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+  })();
+
+  /* 목록·돌아가기 링크도 부드럽게 이동 */
+  Array.prototype.forEach.call(document.querySelectorAll("a.soft"), function (a) {
+    a.addEventListener("click", function (e) { e.preventDefault(); goTo(a.href); });
+  });
+</script>
+</body>
+</html>
