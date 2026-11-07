@@ -1,0 +1,33 @@
+# Pages CMS 설정 — 폰/PC에서 Archive 글을 쓰는 화면
+media:
+  input: images/archive            # 올린 사진이 저장되는 폴더
+  output: /hi.my.workstudio/images/archive
+
+content:
+  - name: posts
+    label: Archive
+    type: collection
+    path: _posts
+    filename: "{year}-{month}-{day}-{primary}.md"
+    view:
+      primary: title
+      sort: date
+      order: desc
+    fields:
+      - name: title
+        label: 제목
+        type: string
+        required: true
+      - name: subtitle
+        label: 소제목
+        type: string
+      - name: date
+        label: 날짜
+        type: date
+        required: true
+      - name: thumbnail
+        label: 썸네일 (목록 오른쪽 사진, 없으면 비워두기)
+        type: image
+      - name: body
+        label: 본문
+        type: rich-text
