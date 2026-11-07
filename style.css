@@ -3,10 +3,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
 
 :root {
-  --bg: #f7f5ef;
-  --text: #1c1c1c;
-  --sub: #8a8780;
-  --line: #dedbd2;
+  --bg: #f3f5f6;     /* 쿨톤 미색 */
+  --text: #1c1e20;
+  --sub: #84898c;
+  --line: #d9dde0;
+  --placeholder: #e6e9eb;
 
   /* 영문은 명조, 한글은 Pretendard로 자동 분리 */
   --font: "Cormorant Garamond", "Pretendard", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
@@ -137,7 +138,7 @@ img { display: block; max-width: 100%; height: auto; }
   width: 100%;
   aspect-ratio: 2 / 3;
   object-fit: cover;
-  background: #ebe8df;
+  background: var(--placeholder);
   transition: opacity 0.25s;
 }
 .poster:hover img { opacity: 0.8; }
