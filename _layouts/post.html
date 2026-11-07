@@ -137,6 +137,7 @@
       <!-- 본문: Pages CMS에서 쓴 내용이 여기에 들어가요 -->
       <div class="post-body">
         {{ content }}
+        {% for ph in page.photos %}<img src="{{ ph }}" alt="{{ page.title }} 사진 {{ forloop.index }}" loading="lazy">{% endfor %}
       </div>
     </article>
   </main>
