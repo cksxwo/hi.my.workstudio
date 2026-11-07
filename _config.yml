@@ -21,7 +21,7 @@ defaults:
       path: ""
       type: exhibition_posts
     values:
-      layout: exhibition
+      layout: exhibition_post   # _layouts/exhibition_post.html 틀을 사용
 
 exclude:
   - README.md
