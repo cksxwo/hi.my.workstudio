@@ -5,8 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Artwork | hi my workstudio</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="style.css">
   <style>
+    /* ── 기본 설정 (style.css가 없어도 메인홈과 같은 모습이 되도록) ── */
+    :root {
+      --bg: #f3f5f6; --text: #1c1e20; --sub: #84898c; --placeholder: #e6e9eb;
+      --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font); font-weight: 300;
+      background: var(--bg); color: var(--text);
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    .page { max-width: 1100px; margin: 0 auto; padding-left: 5%; padding-right: 5%; padding-bottom: 120px; }
+    /* 하단 문구: CV처럼 화면 맨 아래 가운데 */
+    body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+    .page { flex: 1 0 auto; width: 100%; }
+    .site-footer { padding: 36px 5%; font-size: .85rem; color: var(--sub); text-align: center; }
+
     /* ── 페이지가 부드럽게 나타남 ── */
     body { animation: pageIn .7s ease both; }
     @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
@@ -20,6 +40,9 @@
       background: none; border: 0; cursor: pointer; color: var(--text);
     }
     .menu-btn:focus { outline: none; }
+    /* 아래로 스크롤하면 메뉴 버튼이 사라지고, 위로 올리면 다시 나타남 */
+    .menu-btn { transition: opacity .4s ease, transform .4s ease; }
+    body.nav-hidden .menu-btn { opacity: 0; pointer-events: none; transform: translate(-50%, -14px); }
     .menu-btn span {
       position: absolute; left: 10px; width: 24px; height: 2px;
       background: currentColor;
@@ -106,19 +129,24 @@
 
     /* 작은 썸네일: 대표 사진과 같은 폭, 칸 크기는 그 폭에 딱 맞게 자동 계산 */
     .thumbs {
-      display: flex; flex-wrap: wrap; justify-content: flex-start; gap: var(--gap, 10px);
+      display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap, 2px);
       list-style: none; margin: 0 auto; max-width: 100%;
       transition: width .45s ease;
     }
+    .thumbs.fitted { justify-content: flex-start; }   /* 대표 사진 폭에 맞춘 뒤에는 왼쪽부터 채움 */
     .thumbs button {
       display: block; width: var(--tsize, 84px); height: auto; aspect-ratio: 1 / 1;   /* 항상 정사각형 */
       flex-shrink: 0; overflow: hidden; padding: 0; border: 0;
       background: var(--placeholder); cursor: pointer;
-      opacity: .5; transition: opacity .3s ease, width .45s ease;
+      position: relative; transition: opacity .3s ease, width .45s ease;
     }
     .thumbs button img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
     .thumbs button:hover, .thumbs button:focus-visible { opacity: .85; outline: none; }
-    .thumbs button.active { opacity: 1; }
+    /* 아이폰 앨범처럼 모두 또렷하게, 지금 보는 작품만 옅은 흰 막으로 표시 */
+    .thumbs button.active::after {
+      content: ""; position: absolute; inset: 0;
+      background: rgba(255, 255, 255, .45);
+    }
 
     @media (max-width: 600px) {
       .menu a { font-size: 1.1rem; }
@@ -228,7 +256,7 @@
     </section>
   </main>
 
-  <footer class="site-footer">© 2026 hi my workstudio</footer>
+  <footer class="site-footer">© hi my workstudio</footer>
 
   <div class="veil" aria-hidden="true"></div>
 
@@ -260,6 +288,22 @@
       goTo(a.href);
     });
   });
+  /* 스크롤 방향에 따라 메뉴 버튼 숨기기/보이기 */
+  (function () {
+    var lastY = window.scrollY, ticking = false;
+    function onScroll() {
+      var y = window.scrollY;
+      if (document.body.classList.contains("menu-open")) { lastY = y; ticking = false; return; }
+      if (y < 40) document.body.classList.remove("nav-hidden");            // 맨 위 근처에선 항상 보임
+      else if (y > lastY + 4) document.body.classList.add("nav-hidden");    // 아래로 → 숨김
+      else if (y < lastY - 4) document.body.classList.remove("nav-hidden"); // 위로 → 보임
+      lastY = y; ticking = false;
+    }
+    window.addEventListener("scroll", function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+    }, { passive: true });
+  })();
+
   window.addEventListener("pageshow", function (e) {
     if (e.persisted) { leaving = false; document.body.classList.remove("navigating"); }
   });
@@ -302,15 +346,17 @@
       var W = Math.round(img.getBoundingClientRect().width);
       if (!W) return;
       var mobile = window.innerWidth <= 600;
-      var gap = mobile ? 8 : 10, target = mobile ? 60 : 84;
+      var gap = 2, target = mobile ? 64 : 88;                        // 아이폰 앨범처럼 거의 붙은 간격
       var per = Math.max(3, Math.floor((W + gap) / (target + gap)));
       per = Math.min(per, thumbs.length) || 1;
       var size = (W - gap * (per - 1)) / per;
       if (size > target * 1.35) size = target * 1.35;             // 썸네일이 너무 커지지 않게
+      size = Math.floor(size * 10) / 10;                            // 소수점 반올림으로 줄이 넘어가지 않게
       box.style.setProperty("--gap", gap + "px");
       box.style.setProperty("--tsize", size.toFixed(1) + "px");
       // 썸네일이 적어 폭을 다 채우지 못하면 그 줄 폭만큼만 쓰고 가운데 정렬
-      box.style.width = Math.min(W, per * size + gap * (per - 1)).toFixed(1) + "px";
+      box.style.width = (Math.min(W, per * size + gap * (per - 1)) + 0.5).toFixed(1) + "px";
+      box.classList.add("fitted");
     }
     img.addEventListener("load", fit);
     window.addEventListener("resize", fit);
