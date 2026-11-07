@@ -72,6 +72,7 @@
   body.menu-open .menu li:nth-child(1) { transition-delay: .12s; }
   body.menu-open .menu li:nth-child(2) { transition-delay: .2s; }
   body.menu-open .menu li:nth-child(3) { transition-delay: .28s; }
+  body.menu-open .menu li:nth-child(4) { transition-delay: .36s; }
   .menu a {
     display: inline-block; padding: 9px 0;
     font-size: 1.3rem; font-weight: 300; letter-spacing: .08em;   /* PC */
@@ -143,8 +144,7 @@
   }
   .feather-link.on { opacity: 1; pointer-events: auto; cursor: pointer; }
   .feather-link { transition: opacity 1.6s ease, color .3s ease; }   /* 은은하게 나타남 */
-  .feather-link span { white-space: nowrap; }
-  .feather-link span { display: inline-block; transform: scaleY(1.1); }   /* 글자를 세로로 아주 조금 길게 */
+  .feather-link span { white-space: nowrap; font-family: var(--font); }   /* 원래 Pretendard 그대로 */
   .feather-link:hover, .feather-link:focus-visible { color: #1c1e20; }   /* 밑줄 없이 진해지기만 */
   .feather-link:focus-visible { outline: none; }
 
@@ -192,7 +192,7 @@
 
   /* 모바일 */
   @media (max-width: 600px) {
-    .home p { font-size: 1.05rem; margin-top: 16px; }   /* 모바일 이름 크기·타이틀과 간격 */
+    .home p { font-size: .95rem; margin-top: 16px; }    /* 모바일 이름 크기·타이틀과 간격 */
     .menu a { font-size: 1.1rem; }                       /* 모바일 메뉴 글씨는 그대로 */
     /* 모바일 크기에서만: 가로 이미지를 시계 반대 방향으로 90° 돌려 세로 화면을 채움 */
     .art-media { position: relative; }
@@ -223,6 +223,7 @@
     <ul>
       <li><a href="cv.html">CV</a></li>
       <li><a href="artwork.html">Artwork</a></li>
+      <li><a href="archive.html">Archive</a></li>
       <li><a href="exhibition.html">Exhibition</a></li>
     </ul>
   </nav>
