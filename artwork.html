@@ -2,53 +2,323 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Artwork | hi my workstudio</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── 페이지가 부드럽게 나타남 ── */
+    body { animation: pageIn .7s ease both; }
+    @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    /* ── 두 줄 메뉴 버튼 (메인홈과 동일) ── */
+    .menu-btn {
+      position: fixed; z-index: 30;
+      top: calc(24px + env(safe-area-inset-top, 0px)); left: 50%;
+      width: 44px; height: 44px; transform: translateX(-50%);
+      background: none; border: 0; cursor: pointer; color: var(--text);
+    }
+    .menu-btn:focus { outline: none; }
+    .menu-btn span {
+      position: absolute; left: 10px; width: 24px; height: 2px;
+      background: currentColor;
+      transition: transform .5s cubic-bezier(.65,0,.35,1), top .5s cubic-bezier(.65,0,.35,1);
+    }
+    .menu-btn span:nth-child(1) { top: 17px; }
+    .menu-btn span:nth-child(2) { top: 25px; }
+    body.menu-open .menu-btn span:nth-child(1) { top: 21px; transform: rotate(45deg); }
+    body.menu-open .menu-btn span:nth-child(2) { top: 21px; transform: rotate(-45deg); }
+
+    /* ── 카테고리 화면 (메인홈과 동일) ── */
+    .menu {
+      position: fixed; inset: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      opacity: 0; visibility: hidden;
+      transition: opacity .6s ease, visibility 0s linear .6s;
+    }
+    body.menu-open .menu { opacity: 1; visibility: visible; transition: opacity .6s ease; }
+    body.menu-open { overflow: hidden; }
+    .menu ul { list-style: none; text-align: center; margin-top: -6vh; }
+    .menu li {
+      opacity: 0; transform: translateY(14px);
+      transition: opacity .5s ease, transform .6s cubic-bezier(.22,.61,.36,1);
+    }
+    body.menu-open .menu li { opacity: 1; transform: none; }
+    body.menu-open .menu li:nth-child(1) { transition-delay: .12s; }
+    body.menu-open .menu li:nth-child(2) { transition-delay: .2s; }
+    body.menu-open .menu li:nth-child(3) { transition-delay: .28s; }
+    .menu a {
+      display: inline-block; padding: 9px 0;
+      font-size: 1.3rem; font-weight: 300; letter-spacing: .08em;
+      color: var(--sub); transition: color .3s;
+    }
+    .menu a:hover, .menu a:focus-visible, .menu a.active { color: var(--text); outline: none; }
+
+    /* 페이지 이동 시 부드럽게 덮이는 막 */
+    .veil {
+      position: fixed; inset: 0; z-index: 40;
+      background: var(--bg); opacity: 0; pointer-events: none;
+      transition: opacity .7s ease;
+    }
+    body.navigating .veil { opacity: 1; pointer-events: auto; }
+
+    /* ── 작업 목록 ── */
+    .page { padding-top: calc(96px + env(safe-area-inset-top, 0px)); }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    /* 연도 묶음 */
+    .year + .year { margin-top: 120px; }
+    .year-title {
+      text-align: center; margin-bottom: 28px;
+      font-size: 1.6rem; font-weight: 300; letter-spacing: .06em;
+    }
+
+    /* 큰 대표 사진 */
+    .feature { display: flex; justify-content: center; margin-bottom: 28px; }
+    .feature-frame {
+      position: relative; display: inline-block;
+      cursor: pointer; border: 0; padding: 0; background: none;
+      max-width: 100%;
+    }
+    .feature-frame:focus { outline: none; }
+    .feature-img {
+      display: block;
+      max-width: 100%; max-height: 72vh; width: auto; height: auto;
+      transition: opacity .45s ease;
+    }
+    .feature-img.swap { opacity: 0; }
+
+    /* 누르면 연한 회색이 덮이고 흰 글씨 캡션이 나타남 */
+    .caption {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; padding: 24px; text-align: center;
+      background: rgba(170, 177, 182, .62);
+      color: #fff;
+      opacity: 0; transition: opacity .5s ease;
+    }
+    .feature-frame.open .caption { opacity: 1; }
+    .caption .cap-title { font-size: 1.25rem; font-weight: 400; letter-spacing: .02em; }
+    .caption .cap-meta { font-size: .9rem; font-weight: 300; letter-spacing: .04em; opacity: .92; }
+    .caption .cap-desc { max-width: 420px; margin-top: 6px; font-size: .85rem; font-weight: 300; line-height: 1.7; opacity: .9; }
+
+    /* 작은 썸네일: 대표 사진과 같은 폭, 칸 크기는 그 폭에 딱 맞게 자동 계산 */
+    .thumbs {
+      display: flex; flex-wrap: wrap; justify-content: flex-start; gap: var(--gap, 10px);
+      list-style: none; margin: 0 auto; max-width: 100%;
+      transition: width .45s ease;
+    }
+    .thumbs button {
+      display: block; width: var(--tsize, 84px); height: auto; aspect-ratio: 1 / 1;   /* 항상 정사각형 */
+      flex-shrink: 0; overflow: hidden; padding: 0; border: 0;
+      background: var(--placeholder); cursor: pointer;
+      opacity: .5; transition: opacity .3s ease, width .45s ease;
+    }
+    .thumbs button img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+    .thumbs button:hover, .thumbs button:focus-visible { opacity: .85; outline: none; }
+    .thumbs button.active { opacity: 1; }
+
+    @media (max-width: 600px) {
+      .menu a { font-size: 1.1rem; }
+      .page { padding-top: calc(84px + env(safe-area-inset-top, 0px)); }
+      .year + .year { margin-top: 84px; }
+      .year-title { font-size: 1.3rem; margin-bottom: 20px; }
+      .feature-img { max-height: 60vh; }
+    }
+  </style>
 </head>
 <body>
 
-  <header class="site-header">
-    <ul class="site-nav">
+  <button class="menu-btn" id="menuBtn" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="menu">
+    <span></span><span></span>
+  </button>
+
+  <nav class="menu" id="menu" aria-label="카테고리" aria-hidden="true">
+    <ul>
       <li><a href="cv.html">CV</a></li>
       <li><a href="artwork.html" class="active">Artwork</a></li>
       <li><a href="exhibition.html">Exhibition</a></li>
     </ul>
-  </header>
+  </nav>
 
   <main class="page">
-    <h1 class="page-title">Artwork</h1>
+    <h1 class="sr-only">Artwork</h1>
 
-    <div class="artwork-grid">
-      <figure>
-        <img src="https://placehold.co/600x800?text=Artwork+1" alt="작품 1">
-        <figcaption>작품 제목, 2026, 재료</figcaption>
-      </figure>
-      <figure>
-        <img src="https://placehold.co/600x450?text=Artwork+2" alt="작품 2">
-        <figcaption>작품 제목, 2026, 재료</figcaption>
-      </figure>
-      <figure>
-        <img src="https://placehold.co/600x700?text=Artwork+3" alt="작품 3">
-        <figcaption>작품 제목, 2026, 재료</figcaption>
-      </figure>
-      <figure>
-        <img src="https://placehold.co/600x600?text=Artwork+4" alt="작품 4">
-        <figcaption>작품 제목, 2026, 재료</figcaption>
-      </figure>
-      <figure>
-        <img src="https://placehold.co/600x800?text=Artwork+5" alt="작품 5">
-        <figcaption>작품 제목, 2026, 재료</figcaption>
-      </figure>
-      <figure>
-        <img src="https://placehold.co/600x500?text=Artwork+6" alt="작품 6">
-        <figcaption>작품 제목, 2026, 재료</figcaption>
-      </figure>
-    </div>
+    <!-- 연도별 작업
+         · 새 연도를 추가하려면 <section class="year"> … </section> 묶음 전체를 복사해서 연도와 작품만 바꾸세요
+         · 작품을 추가하려면 그 연도의 <li> 한 줄을 복사해서 내용만 바꾸세요
+           data-src 큰 사진 / 맨 끝 img src 썸네일 / data-title 제목 / data-year 연도
+           data-material 재료 / data-size 크기 / data-desc 짧은 설명(없으면 비워두기)
+         · 각 연도의 맨 위 <li>가 처음 보이는 대표 작품 -->
+
+    <!-- ───────── 2026 ───────── -->
+    <section class="year">
+      <h2 class="year-title">2026</h2>
+      <div class="feature">
+        <button class="feature-frame" type="button" aria-label="작품 정보 보기">
+          <img class="feature-img" alt="">
+          <span class="caption">
+            <span class="cap-title"></span>
+            <span class="cap-meta"></span>
+            <span class="cap-desc"></span>
+          </span>
+        </button>
+      </div>
+      <ul class="thumbs">
+        <li><button type="button"
+          data-src="https://placehold.co/1200x1600?text=2026+Work+1"
+          data-title="작품 제목 1" data-year="2026" data-material="재료" data-size="" data-desc=""
+          aria-label="작품 제목 1"><img src="https://placehold.co/200x200?text=1" alt=""></button></li>
+        <li><button type="button"
+          data-src="https://placehold.co/1600x1200?text=2026+Work+2"
+          data-title="작품 제목 2" data-year="2026" data-material="재료" data-size="" data-desc=""
+          aria-label="작품 제목 2"><img src="https://placehold.co/200x200?text=2" alt=""></button></li>
+        <li><button type="button"
+          data-src="https://placehold.co/1200x1400?text=2026+Work+3"
+          data-title="작품 제목 3" data-year="2026" data-material="재료" data-size="" data-desc=""
+          aria-label="작품 제목 3"><img src="https://placehold.co/200x200?text=3" alt=""></button></li>
+        <li><button type="button"
+          data-src="https://placehold.co/1400x1400?text=2026+Work+4"
+          data-title="작품 제목 4" data-year="2026" data-material="재료" data-size="" data-desc=""
+          aria-label="작품 제목 4"><img src="https://placehold.co/200x200?text=4" alt=""></button></li>
+        <li><button type="button"
+          data-src="https://placehold.co/1200x1600?text=2026+Work+5"
+          data-title="작품 제목 5" data-year="2026" data-material="재료" data-size="" data-desc=""
+          aria-label="작품 제목 5"><img src="https://placehold.co/200x200?text=5" alt=""></button></li>
+        <li><button type="button"
+          data-src="https://placehold.co/1600x1000?text=2026+Work+6"
+          data-title="작품 제목 6" data-year="2026" data-material="재료" data-size="" data-desc=""
+          aria-label="작품 제목 6"><img src="https://placehold.co/200x200?text=6" alt=""></button></li>
+      </ul>
+    </section>
+
+    <!-- ───────── 2025 ───────── -->
+    <section class="year">
+      <h2 class="year-title">2025</h2>
+      <div class="feature">
+        <button class="feature-frame" type="button" aria-label="작품 정보 보기">
+          <img class="feature-img" alt="">
+          <span class="caption">
+            <span class="cap-title"></span>
+            <span class="cap-meta"></span>
+            <span class="cap-desc"></span>
+          </span>
+        </button>
+      </div>
+      <ul class="thumbs">
+        <li><button type="button"
+          data-src="https://placehold.co/1600x1100?text=2025+Work+1"
+          data-title="작품 제목 1" data-year="2025" data-material="재료" data-size="" data-desc=""
+          aria-label="작품 제목 1"><img src="https://placehold.co/200x200?text=1" alt=""></button></li>
+        <li><button type="button"
+          data-src="https://placehold.co/1200x1500?text=2025+Work+2"
+          data-title="작품 제목 2" data-year="2025" data-material="재료" data-size="" data-desc=""
+          aria-label="작품 제목 2"><img src="https://placehold.co/200x200?text=2" alt=""></button></li>
+        <li><button type="button"
+          data-src="https://placehold.co/1400x1400?text=2025+Work+3"
+          data-title="작품 제목 3" data-year="2025" data-material="재료" data-size="" data-desc=""
+          aria-label="작품 제목 3"><img src="https://placehold.co/200x200?text=3" alt=""></button></li>
+        <li><button type="button"
+          data-src="https://placehold.co/1200x1600?text=2025+Work+4"
+          data-title="작품 제목 4" data-year="2025" data-material="재료" data-size="" data-desc=""
+          aria-label="작품 제목 4"><img src="https://placehold.co/200x200?text=4" alt=""></button></li>
+      </ul>
+    </section>
   </main>
 
   <footer class="site-footer">© 2026 hi my workstudio</footer>
 
+  <div class="veil" aria-hidden="true"></div>
+
+<script>
+  /* ── 메뉴 열기/닫기 (메인홈과 동일) ── */
+  var menuBtn = document.getElementById("menuBtn");
+  var menu = document.getElementById("menu");
+  function setMenu(open) {
+    document.body.classList.toggle("menu-open", open);
+    menuBtn.setAttribute("aria-expanded", open);
+    menuBtn.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    menu.setAttribute("aria-hidden", !open);
+  }
+  menuBtn.addEventListener("click", function () { setMenu(!document.body.classList.contains("menu-open")); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") setMenu(false); });
+
+  /* 부드럽게 페이지 이동 */
+  var leaving = false;
+  function goTo(href) {
+    if (leaving) return;
+    leaving = true;
+    document.body.classList.add("navigating");
+    setTimeout(function () { location.href = href; }, 700);
+  }
+  Array.prototype.forEach.call(menu.querySelectorAll("a"), function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (a.classList.contains("active")) { setMenu(false); return; }   // 지금 페이지면 닫기만
+      goTo(a.href);
+    });
+  });
+  window.addEventListener("pageshow", function (e) {
+    if (e.persisted) { leaving = false; document.body.classList.remove("navigating"); }
+  });
+
+  /* ── 연도별 작업: 연도마다 따로 동작 ── */
+  Array.prototype.forEach.call(document.querySelectorAll(".year"), function (sec) {
+    var feature = sec.querySelector(".feature-frame");
+    var img = sec.querySelector(".feature-img");
+    var capTitle = sec.querySelector(".cap-title");
+    var capMeta = sec.querySelector(".cap-meta");
+    var capDesc = sec.querySelector(".cap-desc");
+    var box = sec.querySelector(".thumbs");
+    var thumbs = Array.prototype.slice.call(box.querySelectorAll("button"));
+
+    function show(btn, instant) {
+      var d = btn.dataset;
+      thumbs.forEach(function (b) { b.classList.toggle("active", b === btn); });
+      feature.classList.remove("open");                            // 작품을 바꾸면 캡션은 닫힘
+      function apply() {
+        img.src = d.src;
+        img.alt = d.title || "";
+        capTitle.textContent = d.title || "";
+        capMeta.textContent = [d.year, d.material, d.size].filter(Boolean).join(", ");
+        capDesc.textContent = d.desc || "";
+        capDesc.style.display = d.desc ? "" : "none";
+        feature.setAttribute("aria-label", (d.title || "작품") + " 정보 보기");
+      }
+      if (instant) { apply(); return; }
+      img.classList.add("swap");                                    // 이전 사진이 사라지고 새 사진이 나타남
+      setTimeout(function () {
+        apply();
+        var done = function () { img.classList.remove("swap"); };
+        if (img.complete) done(); else img.onload = done;
+      }, 300);
+    }
+
+    /* 썸네일 줄을 대표 사진 폭에 맞춤
+       칸 크기 목표: PC 84px · 모바일 60px → 폭 안에 들어가는 개수를 구하고, 남는 폭 없이 딱 맞게 늘림 */
+    function fit() {
+      var W = Math.round(img.getBoundingClientRect().width);
+      if (!W) return;
+      var mobile = window.innerWidth <= 600;
+      var gap = mobile ? 8 : 10, target = mobile ? 60 : 84;
+      var per = Math.max(3, Math.floor((W + gap) / (target + gap)));
+      per = Math.min(per, thumbs.length) || 1;
+      var size = (W - gap * (per - 1)) / per;
+      if (size > target * 1.35) size = target * 1.35;             // 썸네일이 너무 커지지 않게
+      box.style.setProperty("--gap", gap + "px");
+      box.style.setProperty("--tsize", size.toFixed(1) + "px");
+      // 썸네일이 적어 폭을 다 채우지 못하면 그 줄 폭만큼만 쓰고 가운데 정렬
+      box.style.width = Math.min(W, per * size + gap * (per - 1)).toFixed(1) + "px";
+    }
+    img.addEventListener("load", fit);
+    window.addEventListener("resize", fit);
+
+    thumbs.forEach(function (b) { b.addEventListener("click", function () { show(b); }); });
+    feature.addEventListener("click", function () { feature.classList.toggle("open"); });
+    if (thumbs.length) show(thumbs[0], true);
+  });
+</script>
 </body>
 </html>
